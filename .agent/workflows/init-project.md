@@ -1,6 +1,7 @@
 ---
 description: Initialize new Obelisk project
 ---
+
 **CURRENT STATE: PROJECT START**
 
 Two-phase process: Discovery (discussion) → Initialization (file creation).
@@ -175,42 +176,116 @@ If discovery was skipped:
 
 ## Required Outputs
 
-### Contracts (`/obelisk/contracts/`)
+### Canonical Log Rule (CRITICAL)
 
-create: 
-- `contracts-summary.md`
-- `contracts-log.md`
+During initialization:
+- **DO NOT write any entries** to `contracts-log.md` or `history-log.md`
+- All initial content **MUST** be written **ONLY** under `## Unprocessed` in summaries
+- Canonical logs remain **empty** until first maintenance compaction
 
-Append initial invariants to the `## Unprocessed` section of `contracts-summary.md`:
+---
+
+### File Templates (Use Exactly)
+
+#### 1. Create Empty Logs
+
+**`/obelisk/contracts/contracts-log.md`:**
+
+# Contracts Log
+
+*(Leave file empty - no additional content)*
+
+---
+
+**`/obelisk/history/history-log.md`:**
+
+# History Log
+
+*(Leave file empty - no additional content)*
+
+---
+
+#### 2. Create Summaries with Structure
+
+**`/obelisk/contracts/contracts-summary.md`:**
+
+``` markdown
+# Contracts Summary
+
+Generated: [Insert actual date YYYY-MM-DD]
+
+## System Identity
+_(empty — populated after first maintenance)_
+
+## Active Contracts
+_(empty — populated after first maintenance)_
+
+## Non-Goals
+_(empty — populated after first maintenance)_
+
+## Unprocessed
+
+[Append all initialization contracts here]
+```
+
+**Rules:**
+- Append initialization contracts under `## Unprocessed` only
+- Do NOT add `## Processed` or any other sections
+- Keep structured sections empty with placeholder text
+
+---
+
+**`/obelisk/history/history-summary.md`:**
+
+``` markdown
+# History Summary
+
+Generated: [Insert actual date YYYY-MM-DD]
+
+## Project Timeline
+_(empty — populated after first maintenance)_
+
+## Recent Activity
+_(empty — populated after first maintenance)_
+
+## Active Patterns
+_(empty — populated after first maintenance)_
+
+## Unprocessed
+
+## YYYY-MM-DD | [Project Name] | INITIALIZED
+
+**Summary:** [One-line project description]
+
+**Decisions:**
+[List key decisions from discovery]
+```
+
+**Rules:**
+- Append initialization entry under `## Unprocessed` only
+- Do NOT add `## Processed` or any other sections
+- Keep structured sections empty with placeholder text
+- Replace YYYY-MM-DD with actual date in the entry header
+
+---
+
+### Content Placement Rules
+
+**Contracts Summary (`## Unprocessed`):**
 - System identity and boundaries
 - Global business rules
 - Explicit non-goals
 - Safety-critical rules
 - Open questions
 
+**History Summary (`## Unprocessed`):**
+- Single INITIALIZED entry block
+- Include summary + decisions from discovery
 
----
-
-### History (`/obelisk/history`)
-
-Create 
-- `history-summary.md`:
-- `history-log.md`
-
-Append the following block as the last entry within the section `## Unprocessed`
-in `/obelisk/history/history-summary.md`:
-
-``` markdown
-## YYYY-MM-DD | [Project Name] | INITIALIZED
-
-**Summary:** [One-line project description]
-
-**Decisions:**
-[Copy from discovery-decisions.md created during init]
-
----
-
-```
+**Both Logs:**
+- Must remain completely empty
+- No placeholder text
+- No section headers beyond file title
 
 ---
 

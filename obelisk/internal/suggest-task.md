@@ -18,6 +18,16 @@ If either is missing → STOP.
 
 ---
 
+### Optional (Quick Context) 
+- /obelisk/history/history-summary.md 
+- /obelisk/contracts/contracts-summary.md 
+
+Purpose: Rapid overview before deep log analysis. 
+
+**Logs remain authoritative for all decisions.**
+
+---
+
 ## Analysis
 
 From **history-log.md**:
