@@ -1,10 +1,9 @@
 ---
 description: Initialize new Obelisk project
 ---
+## Required Files
 
-**CURRENT STATE: PROJECT START**
-
-Two-phase process: Discovery (discussion) → Initialization (file creation).
+- `/obelisk/guidelines/ai-engineering.md`
 
 ---
 
@@ -13,14 +12,17 @@ Two-phase process: Discovery (discussion) → Initialization (file creation).
 The following MUST NOT exist:
 
 **State files:**
+
 - `/obelisk/contracts/contracts-summary.md`
--  `/obelisk/contracts/contracts-log.md`
-- `/obelisk/history/history-summary.md`
+- `/obelisk/contracts/contracts-log.md`
+- `/obelisk/design/design-summary.md`
+- `/obelisk/design/design-log.md`
 - `/obelisk/history/history-log.md`
 
 If any exist → **STOP**.
 
 **Output to user:**
+
 > ⛔ PROJECT INIT ABORTED  
 > This project appears to be already initialized.  
 > Re-initialization is blocked to prevent accidental data loss.  
@@ -30,32 +32,31 @@ If any exist → **STOP**.
 
 # PHASE 1: DISCOVERY
 
-Understand the project through discussion. **No files created yet.**
+Understand the project and identify contract and design candidates.  
+**No files created yet.**
 
 ---
 
 ## Discovery Rules
 
-**Purpose**
-- Understand the system
-- Identify contract candidates
-
 **Questioning Rules**
-- Ask only what materially affects contracts or long-lived understanding
-- Do NOT propose solutions, designs, or code
+
+- Ask only what materially affects contracts or long-lived design
 - Do NOT assume missing information — surface it explicitly
 - Prefer fewer, high-impact questions
 - Skip obvious or deferrable details
-- Group related clarifications into a single question
+- Group related clarifications into one question
 
 **Allowed Topics**
+
 - System identity and boundaries
 - Core invariants
 - Global or technical constraints
 - Safety or irreversible risks
-- Long-lived design or UX intent
+- Long-lived architectural or UX intent
 
 **Forbidden Topics**
+
 - Implementation details
 - Edge cases or speculative future features
 - Preferences likely to change
@@ -68,6 +69,7 @@ Understand the project through discussion. **No files created yet.**
 ### 1. Open
 
 Output exactly:
+
 ```
 PHASE 1: DISCOVERY
 
@@ -78,7 +80,7 @@ Type `skip` to use minimal defaults (not recommended).
 **STOP. Wait for user response.**
 
 - If `skip` → proceed to PHASE 2
-- Otherwise → treat response as project description, proceed to Clarification
+- Otherwise → treat response as project description and proceed to Clarification
 
 ---
 
@@ -98,8 +100,7 @@ Ask only what would change contracts or durable understanding.
 
 #### Step 2 — Follow-up Questions
 
-Ask follow-up questions **only if needed** to resolve ambiguity
-introduced by earlier answers.
+Ask follow-up questions **only if needed** to resolve ambiguity introduced by earlier answers.
 
 ---
 
@@ -108,11 +109,13 @@ introduced by earlier answers.
 Present confirmed understanding for review.
 
 If ambiguity remains:
+
 - Record unresolved items under **Open Questions**
 - Treat them as task-level concerns, not blockers
 - Proceed with initialization
 
 **Summary Format**
+
 ```markdown
 **System Identity:**
 - What it is:
@@ -133,6 +136,7 @@ If ambiguity remains:
 ## Discovery Exit
 
 Output exactly:
+
 ```
 Review the summary above.
 - Type `initialize` to create project files
@@ -150,14 +154,15 @@ Awaiting input.
 
 # PHASE 2: INITIALIZATION
 
-Extract and persist confirmed project truth. **Non-interactive, non-creative.**
+Extract and persist confirmed project truth.  
+**Non-interactive. Non-creative.**
 
 ---
 
 ## Rules
 
-- Use ONLY information explicitly established
-- Do NOT invent, infer, or strengthen intent
+- Use ONLY explicitly established information
+- Do NOT invent or strengthen intent
 - Be minimal — over-specification is failure
 - List unresolved items explicitly
 
@@ -167,52 +172,44 @@ Extract and persist confirmed project truth. **Non-interactive, non-creative.**
 
 If discovery was skipped:
 
-- Populate only what is explicitly stated
-- Leave all other sections empty
-- Do NOT infer or normalize missing information
-- Do NOT create feature contract files
+- Populate only explicitly stated information
+- Leave all other sections empty (no inference)
 
 ---
 
 ## Required Outputs
 
-### Canonical Log Rule (CRITICAL)
+### 1. Canonical Logs (Must Remain Empty)
 
-During initialization:
-- **DO NOT write any entries** to `contracts-log.md` or `history-log.md`
-- All initial content **MUST** be written **ONLY** under `## Unprocessed` in summaries
-- Canonical logs remain **empty** until first maintenance compaction
+Create the following files and leave them completely empty:
 
----
+- `/obelisk/contracts/contracts-log.md`
+- `/obelisk/design/design-log.md`
+- `/obelisk/history/history-log.md`
 
-### File Templates (Use Exactly)
+Rules:
 
-#### 1. Create Empty Logs
-
-**`/obelisk/contracts/contracts-log.md`:**
-
-# Contracts Log
-
-*(Leave file empty - no additional content)*
+- No placeholder text
+- No additional headers
+- These files must remain empty until first maintenance compaction.
 
 ---
 
-**`/obelisk/history/history-log.md`:**
+### 2. Create Summaries with Structure
 
-# History Log
+All initialization content MUST be written only under `## Unprocessed`.
 
-*(Leave file empty - no additional content)*
+Do NOT create `## Processed` or additional sections.  
+Keep structured sections empty with placeholder text.
 
 ---
 
-#### 2. Create Summaries with Structure
-
-**`/obelisk/contracts/contracts-summary.md`:**
+### **`/obelisk/contracts/contracts-summary.md`:**
 
 ``` markdown
 # Contracts Summary
 
-Generated: [Insert actual date YYYY-MM-DD]
+Generated: YYYY-MM-DD
 
 ## System Identity
 _(empty — populated after first maintenance)_
@@ -228,70 +225,58 @@ _(empty — populated after first maintenance)_
 [Append all initialization contracts here]
 ```
 
-**Rules:**
-- Append initialization contracts under `## Unprocessed` only
-- Do NOT add `## Processed` or any other sections
-- Keep structured sections empty with placeholder text
+**Content allowed under `## Unprocessed`:**
+
+- System identity and boundaries
+- Global business rules
+- Safety-critical rules
+- Explicit non-goals
+- Open contract questions
 
 ---
 
-**`/obelisk/history/history-summary.md`:**
+### **`/obelisk/design/design-summary.md`:**
 
 ``` markdown
-# History Summary
 
-Generated: [Insert actual date YYYY-MM-DD]
+# Design Summary
 
-## Project Timeline
-_(empty — populated after first maintenance)_
+Generated: YYYY-MM-DD
 
-## Recent Activity
-_(empty — populated after first maintenance)_
+## System Architecture
+_(empty — populated after maintenance)_
 
-## Active Patterns
-_(empty — populated after first maintenance)_
+## Data Model
+_(empty — populated after maintenance)_
+
+## Core Design Principles
+_(empty — populated after maintenance)_
+
+## Modules
+_(empty — populated after maintenance)_
+
+## Open Design Questions
+_(empty — populated after maintenance)_
 
 ## Unprocessed
 
-## YYYY-MM-DD | [Project Name] | INITIALIZED
+[Append all initialization architecture & design decisions here]
 
-**Summary:** [One-line project description]
-
-**Decisions:**
-[List key decisions from discovery]
 ```
 
-**Rules:**
-- Append initialization entry under `## Unprocessed` only
-- Do NOT add `## Processed` or any other sections
-- Keep structured sections empty with placeholder text
-- Replace YYYY-MM-DD with actual date in the entry header
+**Content allowed under `## Unprocessed`:**
 
----
-
-### Content Placement Rules
-
-**Contracts Summary (`## Unprocessed`):**
-- System identity and boundaries
-- Global business rules
-- Explicit non-goals
-- Safety-critical rules
-- Open questions
-
-**History Summary (`## Unprocessed`):**
-- Single INITIALIZED entry block
-- Include summary + decisions from discovery
-
-**Both Logs:**
-- Must remain completely empty
-- No placeholder text
-- No section headers beyond file title
+- Long-lived architectural decisions
+- Module definitions and responsibilities
+- Technology stack decisions
+- Core design principles
+- UX philosophy (not layout specifics)
+- Open design questions
 
 ---
 
 ## Output
 
 > ✅ PROJECT INITIALIZED
-> 
 
 STOP.

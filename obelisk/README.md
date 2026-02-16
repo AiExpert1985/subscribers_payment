@@ -14,53 +14,11 @@ As projects grow:
 - Sessions reset and models switch
 - Critical knowledge is lost
 - AI-generated changes silently break working systems
-- It becomes unclear what changed — and why
+- What changed — and why — becomes unclear
 
-Over time, AI-assisted development becomes **unpredictable and difficult to trust**.
+Over time, AI-assisted development becomes unpredictable and difficult to trust.
 
-Obelisk externalizes truth, intent, and history into explicit files so correctness does not depend on chat memory.
-
----
-
-## Design Philosophy
-
-### The Core Problems
-
-**Context Window Trap**
-
-- Chat history grows indefinitely, increasing costs and noise
-- Knowledge lives only in conversation, creating vendor/model lock-in
-- Context limits eventually force abandoning all accumulated understanding
-- Only code remains — stripped of decisions, rationale, and constraints
-
-**Rushed Execution**
-
-- Models default to immediate implementation without understanding
-- Critical questions go unasked; alternatives unexplored
-- Technical decisions lock in before proper evaluation
-
-**Silent Corruption**
-
-- Code drifts from original intent across dozens of small changes
-- AI "fixes" introduce unintended modifications to stable code
-- Subtle bugs accumulate unnoticed over time
-- After long breaks, mental context evaporates — work becomes archaeology
-
-### Why Obelisk Works
-
-**Stateless Collaboration**  
-Files replace chat as the source of truth. Switch models freely, resume after months, pay only for current work.
-
-**Intent Before Execution**  
-Mandatory discovery forces understanding before implementation. Scope, risks, and alternatives are explicit before code changes.
-
-**Validated Evolution**  
-Contracts define boundaries. Review validates every change against frozen intent. Drift and corruption are detected, not discovered later.
-
-> **The failure mode isn't bad code — it's lost knowledge and silent corruption.**
-
-Current tools optimize for immediate productivity at the cost of long-term sustainability.  
-Obelisk inverts this: upfront structure for durable correctness.
+Obelisk externalizes truth, design, intent, and history into explicit files so correctness does not depend on chat memory.
 
 ---
 
@@ -72,20 +30,30 @@ Obelisk is a structured collaboration framework that makes AI-assisted developme
 - **Repeatable**
 - **Recoverable**
 
-It enforces strict separation between:
+**Core mechanism:**  
+External files replace chat as the source of truth.
 
-- **Truth** — what must always hold (contracts)
-- **Intent** — what is being attempted (frozen task)
-- **Execution** — how it is implemented (plan and code)
-- **History** — what changed and why (logs)
+**Key properties:**
+- Model-independent (switch AI providers freely)
+- Stateless (resume after months)
+- Validation-enforced (prevents silent corruption)
 
-> **Contracts define truth. Tasks freeze intent. Plans constrain execution.  
-> History records decisions. Summaries enable work. Archives preserve everything.**
+It does not prevent failure. It prevents **silent damage**.
 
-**Obelisk is model-independent.** Any phase may be executed by different models.
+---
 
-**It does not prevent failure. It prevents silent damage.**  
-Mistakes are expected; corruption is not.
+## How It Works
+
+Obelisk separates five layers:
+
+> **Contracts** define invariants  
+> **Design** defines architecture  
+> **Tasks** freeze intent  
+> **Plans** constrain execution  
+> **History** records events  
+
+Higher layers constrain lower layers.  
+Lower layers may not redefine higher ones.
 
 ---
 
@@ -108,207 +76,171 @@ It intentionally trades early friction for long-term stability.
 
 ---
 
-## Core Properties
+## Design Philosophy
 
-- Files are the source of truth — chat history is not
-- Sessions are stateless — models are interchangeable
-- Intent is frozen before execution
-- All mutations flow through tasks
-- Recovery matters more than perfection
-- Friction is proportional to risk
+### Core Failure Modes
 
-Higher layers constrain lower ones. Lower layers must never redefine higher ones.
+**Context Window Trap**
+- Knowledge trapped in chat
+- Context exhaustion forces resets
+- Decisions lost; only code remains
+
+**Rushed Execution**
+- Implementation before understanding
+- Alternatives unexplored
+- Architectural impact ignored
+
+**Silent Corruption**
+- Gradual drift from original intent
+- Small changes accumulate unnoticed
+- System runs, clarity erodes
+
+### Why Obelisk Works
+
+- Stateless collaboration via files
+- Mandatory discovery before execution
+- Validation against frozen intent
+- Architecture preserved independently of tasks
 
 ---
 
 ## Commands
 
-|Command|Purpose|
-|---|---|
-|`/init-project`|Initialize a project|
-|`/define-task [description]`|Define and freeze a task|
-|`/run-task`|Run task from current phase to the end|
-|`/ask`|Query project knowledge|
-|`/help`|Show available commands|
+| Command | Purpose |
+|----------|----------|
+| `/init-project` | Initialize project structure |
+| `/define-task [description]` | Define and freeze a task |
+| `/run-task` | Plan, implement, review, archive |
+| `/ask` | Query project knowledge |
+| `/help` | Show available commands |
 
 ---
 
-## Workflow Overview
+## Quick Start
 
-> _Discovery clarifies intent → Freeze stabilizes it → Planning constrains execution → Review validates reality._
+**For projects using Obelisk in AI coding tools (Windsurf, Cursor, etc.):**
+
+1. Initialize project:
+```
+/init-project
+```
+
+2. Define a task:
+```
+/define-task Add user authentication
+```
+
+3. Execute:
+```
+/run-task
+```
+
+4. Ask questions anytime:
+```
+/ask What contracts exist?
+```
+
+---
+
+## Core Workflow
 
 ### Project Initialization (Once)
 
-Structured discovery defines system identity, boundaries, and invariants before implementation begins.
+Discovery defines:
 
-**Why this exists:**  
-AI models default to producing solutions even when requirements are unclear. When intent is underspecified, the model fills gaps by guessing. Skipping discovery allows ambiguity to harden into architecture and code.
+- System identity
+- Core invariants
+- Long-lived architectural intent
 
-**Outcome:** A durable foundation that survives session resets and model switches.
-
-_Initialization may be minimal for existing or experimental projects._
+Outcome: durable foundation independent of chat sessions.
 
 ---
 
-### Task Loop (Repeats)
-
-Each task runs as an isolated, stateless cycle.
-
+### Task Cycle (Repeats)
 ```
 task → plan → implement → review → archive
 ```
 
-Execution resumes from the current phase if interrupted.
+Execution resumes from current phase if interrupted.
 
 ---
 
-#### Hotfix (Shortcut)
+### Hotfix (Shortcut)
 
 Used only when:
 
-- Change is single and obvious
+- Change is small and obvious
 - No invariants are affected
 - Fully reversible
 - Diff explains itself
 
-Examples: typos, formatting, simple renames.
-
-Hotfixes bypass planning but are always recorded.
+Hotfixes bypass planning but are always recorded in history.
 
 ---
 
-#### 1 — Create Task (`/define-task`)
+### Task Execution
 
-**Freeze intent before execution.**
+#### `/define-task`
+Freeze intent before execution.  
+Prevents guessing, scope drift, and accidental architecture.
 
-Without freezing:
+#### `/run-task`
+Plan → implement → review → archive.
 
-- Gaps are filled by guessing
-- Edge cases are missed
-- Architectural impact is ignored
-- Intent drifts during implementation
+- Planning constrains execution.
+- Review validates against contracts and intent.
+- Archive preserves traceability.
 
-**Outcome:** A single approved task definition stored in files.
-
----
-
-#### 2 — Run Task (`/run-task`)
-
-Execute the frozen task within contract boundaries.
-
-**Phases:**
-
-**Planning & Implementation**  
-Analyze code, create initial plan, implement without expanding scope.
-
-**Review, Archive & Cleanup**  
-Validate goal, success criteria, and contract preservation. Archive artifacts and reset workspace.
-
-The system evolves with explicit authority and full traceability.
+The system evolves with explicit authority and no silent drift.
 
 ---
 
 ## System Structure
-
 ```
 /obelisk/
 ├── contracts/
-│   ├── contracts-log.md        # Canonical, append-only contracts
-│   └── contracts-summary.md    # AI-generated, derived view
+│   ├── contracts-log.md        # Canonical invariants (append-only)
+│   └── contracts-summary.md    # Active contract projection
+├── design/
+│   ├── design-log.md           # Canonical architectural decisions
+│   └── design-summary.md       # Active architectural projection
 ├── history/
-│   ├── history-log.md          # Canonical, append-only history
-│   └── history-summary.md      # AI-generated, derived view
-├── workspace/                  # Ephemeral execution state
+│   └── history-log.md          # Chronological task timeline
+├── workspace/                  # Active task state
 ├── archive/
-│   ├── completed/              # Approved tasks
-│   ├── rejected/               # Rejected tasks
-│   └── aborted/                # Aborted tasks
+│   ├── completed/
+│   ├── rejected/
+│   └── aborted/
 ├── guidelines/
 │   └── ai-engineering.md       # Execution constraints
-├── internal/                   # Framework internals
-└── README.md
+└── internal/
 ```
 
 ---
 
 ## Authority & Knowledge Model
 
-Obelisk separates authoritative records from derived views.
-
-### Canonical Logs (Authoritative)
-
-**Contracts Log** — append-only record of invariants  
-**History Log** — append-only record of decisions
-
-These define project truth.
-
----
-
-### Derived Summaries (Disposable)
-
-**Contracts Summary** — operational projection of active contracts  
-**History Summary** — compact project timeline
-
-Summaries are regenerated from canonical logs and never override them.
-
----
-
-### Tasks — Frozen Intent
-
-`workspace/active-task.md`
-
-- Created during `/define-task`
-- Immutable once frozen
-- Exists only while active, then archived
-
-**Authority:** Below contracts, above plans and code.
-
----
-
-### Execution Constraints
-
-`guidelines/ai-engineering.md`
-
-Defines how planning and implementation must behave.  
-Cannot override contracts or frozen task intent.
-
----
-
-## Authority Hierarchy (Highest → Lowest)
-
+**Authority Hierarchy (Highest → Lowest):**
 1. Contracts Log
-2. Active Task
-3. AI Engineering Rules
-4. History Log
-5. Derived Summaries
-6. Chat History
+2. Design Log  
+3. Active Task
+4. AI Engineering Rules
+5. History Log
+6. Derived Summaries
+7. Chat History
 
-Higher authority defines intent.  
-Lower authority may not redefine higher authority.
+**Canonical (Authoritative):**
+- Contracts Log — append-only invariants
+- Design Log — append-only architectural decisions
+- History Log — chronological task record
 
----
+**Derived (Disposable):**
+- Contracts Summary — active projection (regenerated)
+- Design Summary — active projection (regenerated)
 
-## Single Mutation Path
-
-All changes to code, contracts, and history flow through tasks.
-
-- No hidden updates
-- Complete audit trail by default
-- Tasks become the project's version history
-
-Derived summaries introduce no authority.
+Summaries never override logs.
 
 ---
 
-## Scope of This File
-
-This README provides **orientation only**.
-
-It does **not**:
-
-- Define project-specific rules
-- Override contracts, tasks, or execution rules
-- Participate in authority resolution
-
-Conceptually, Obelisk defines a **collaboration protocol**.  
-This repository provides a reference implementation of that protocol.
+Obelisk is a collaboration protocol.  
+This repository is its reference implementation.

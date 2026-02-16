@@ -1,21 +1,11 @@
 ---
-description: run small mechanical fix without full task flow
+description: Run small mechanical fix without full task flow
 ---
-**CURRENT STATE: HOTFIX**
+## Required Files
 
-Execute a pre-approved hotfix: a safe, atomic, low-risk change.
-
----
-
-## Preconditions
-
-### Required Inputs
-
-The following MUST exist:
-- Hotfix description (passed from `/define-task`)
 - `/obelisk/guidelines/ai-engineering.md`
 - `/obelisk/contracts/contracts-summary.md`
-- `/obelisk/history/history-summary.md`
+- `/obelisk/history/history-log.md`
 
 If any are missing → **STOP** and report
 
@@ -32,7 +22,7 @@ If any are missing → **STOP** and report
 
 **MUST NOT:**
 - Introduce new concepts, abstractions, or features
-- Expand scope beyond original description
+- Expand scope beyond original task description
 - Perform refactors or multi-step changes
 
 **If scope grows or uncertainty appears → STOP**
@@ -48,7 +38,7 @@ If any are missing → **STOP** and report
 
 **Then execute:**
 - Apply the minimal change directly
-- No formal plan.md artifact
+- No formal implementation-notes.md artifact
 - No user questions
 - Stop if anything unexpected appears
 
@@ -63,12 +53,10 @@ If any are missing → **STOP** and report
 ## Write History
 
 Append the following block as the last entry within the section `## Unprocessed`
-in `/obelisk/history/history-summary.md`:
+in `/obelisk/history/history-log.md`:
 
 ``` markdown
 ## YYYY-MM-DD | [Hotfix Name] | HOTFIX
-
-**Summary:** [One-line description]
 
 ---
 

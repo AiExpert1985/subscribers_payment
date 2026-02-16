@@ -1,50 +1,53 @@
 ---
 description: Plan and implement the active task in one workflow
 ---
-**CURRENT STATE: TASK EXECUTION**
+## Required Files
 
-Plan and implement the active task in one workflow.
-
----
-
-## Preconditions
-
-Required:
 - `/obelisk/workspace/active-task.md`
 - `/obelisk/contracts/contracts-summary.md`
+- `/obelisk/design/design-summary.md`
 - `/obelisk/guidelines/ai-engineering.md`
 
 Optional:
 - `/obelisk/workspace/contract-changes.md`
 
-If any required file is missing → STOP and report path.
+If any required file is missing → STOP.
 
 ---
 
-# Authority
+## Authority (Highest → Lowest)
 
-- Frozen task defines scope and intent.
-- Contracts define invariants.
-- Plan is a working blueprint (informational, not authority).
+1. **Contracts** — invariants (cannot be violated)
+2. **Frozen Task** — scope and intent (cannot expand)
+3. **Design** — system structure (should be respected)
+4. **Plan** — execution blueprint (non-authoritative)
+
+If conflict is detected → STOP and return to discovery.
+
+If `contract-changes.md` exists, approved changes apply to this task only.
 
 ---
 
 # Step 1 — Task Analysis (Required)
 
-Read relevant code before planning.
+Read:
+- `design-summary.md`
+- Relevant code
+- `active-task.md`
 
 You MUST:
-- Understand actual code structure and dependencies
+- Understand current structure and dependencies
+- Identify affected modules
+- Confirm feasibility
 - Identify risks and edge cases
-- Determine correct order of operations
-- Confirm task is feasible in current codebase
 
 You MUST NOT:
-- Expand frozen task scope
+- Expand scope
 - Introduce new requirements
 - Modify contracts
+- Override design without explicit task intent
 
-If task is internally contradictory or infeasible → STOP.
+If task is contradictory or infeasible → STOP.
 
 ---
 
@@ -53,69 +56,62 @@ If task is internally contradictory or infeasible → STOP.
 Create `/obelisk/workspace/implementation-notes.md`:
 
 ```markdown
-# active-plan: [Task Name]
+## active-plan: [Task Name]
 
-## Goal
+### Goal
 [From active-task.md]
 
-## Success Criteria
-[From active-task.md]
-
-## Initial Plan
+### Initial Plan
 
 **Approach:**
-[3–5 sentences describing strategy and key decisions]
+[3–5 sentence strategy]
+
+**Affected Modules:**
+[List modules]
 
 **Files to modify:**
-- `/path/file.ext` — [what will change]
+- `/path/file.ext` — [change]
 
 **Files to create:**
 - `/path/new-file.ext` — [purpose]
 
-**Key steps:**
+**Key Steps:**
 1. [Step]
 2. [Step]
 3. [Step]
 
 **Constraints:**
-- Preserve all contracts in contracts-summary.md
-- Do not expand scope beyond frozen task
-  
+- Preserve contracts
+- Respect design
+- Do not expand scope
+
 ---
 
 ## Plan Revisions
-
-*Leave empty initially. Append here if approach changes during implementation.*
 
 ---
 
 ## Execution Summary
 
-*Leave empty. Complete after implementation.*
-
 ```
 
-The `## Initial Plan` section MUST NOT be modified after creation.
+`## Initial Plan` MUST NOT be modified after creation.
 
-All sections required. Use "None" if applicable.
+All sections required. Use “None” if applicable.
 
 ---
 
 # Step 3 — Implementation
 
-Execute the initial plan.
+Execute the plan.
 
-You MAY adapt the approach if required by actual code state, provided ALL are true:
+Adaptation allowed ONLY if ALL true:
 
-1. Frozen Task Goal remains unchanged.
-2. Success Criteria remain achievable as written.
-3. No contract is violated or modified (unless approved).
-4. Scope boundaries are preserved.
-5. No new feature or requirement is introduced.
-
-When adapting:
-
-Append under `## Plan Revisions`:
+1. Task goal unchanged
+2. No contract violated (unless approved in `contract-changes.md`)
+3. Scope preserved
+4. No new features introduced
+If adapting, append under `## Plan Revisions`:
 
 ``` markdown
 **Revision [N]:**
@@ -125,35 +121,30 @@ Append under `## Plan Revisions`:
 
 ```
 
-Do NOT modify the `## Initial Plan` section.
+Do NOT modify `## Initial Plan`.
 
 ---
 
 # STOP Conditions
 
-STOP immediately if ANY true:
+STOP immediately if:
 
-- Task Goal requires reinterpretation.
-- Success Criteria must change.
-- A contract would be violated.
-- Scope must expand beyond frozen task.
-- A fundamentally new architectural direction or critical new decision is required.
-- Task is infeasible in current codebase.
-- Continuing risks irreversible damage (data loss, security issue).
+- Goal requires reinterpretation
+- Scope must expand
+- A contract would be violated
+- A major architectural decision is required
+- Task is infeasible
+- Continuing risks irreversible damage
 
-If uncertain whether scope or contracts are affected → STOP.
-
-STOP is terminal.
+If uncertain about scope, contracts, or design → STOP.
 
 ---
 
 # Completion
 
-After implementation, append under `## Execution Summary`:
+Append under `## Execution Summary`:
 
 ``` markdown
-## Execution Summary
-
 **Final approach:** [Brief description]
 
 **Deferred items:** [If any]
@@ -164,4 +155,4 @@ After implementation, append under `## Execution Summary`:
 
 OUTPUT:
 
-> "✓ EXECUTION COMPLETE — implementation-notes.md created"
+> ✓ EXECUTION COMPLETE — implementation-notes.md created

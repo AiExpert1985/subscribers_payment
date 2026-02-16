@@ -1,9 +1,12 @@
 ---
 description: Abort & document current task
 ---
-**CURRENT STATE: TASK ABORT**
+## Required Files
 
-Abort the active task, record the outcome, archive workspace, and reset to clean state.
+- `/obelisk/workspace/active-task.md`
+- `/obelisk/history/history-log.md`
+
+If missing → STOP and report missing path.
 
 ---
 
@@ -15,53 +18,32 @@ Triggered when user expresses abort intent:
 
 ---
 
-## Preconditions
+## Determine Task Name
 
-The following MUST exist:
-- `/obelisk/workspace/active-task.md`
--  `/obelisk/history/history-summary.md`
-
-If missing → **STOP** and report missing path
-
-
----
-
-## Determine Abort Context
-
-### Task Name
-Extract from `active-task.md` header
-
-### Abort Phase (Best-Effort)
-
-Infer phase based on files present in `/obelisk/workspace/`:
-- `review-notes.md` → REVIEWED
-- `implementation-notes.md` → IMPLEMENTED
-- `plan.md` → PLANNED
-- `active-task.md` only → DEFINED
+Extract from `active-task.md` header.
 
 ---
 
 ## Write History (Always)
 
-Append the following block as the last entry within the section `## Unprocessed`
-in `/obelisk/history/history-summary.md`:
+Append to `/obelisk/history/history-log.md`:
 
-``` markdown
+```markdown
 ## YYYY-MM-DD | [Task Name] | ABORTED
 
-**Summary:** [One-line task goal]
-
 ---
-
 ```
+
 
 ---
 
 ## Archive Workspace
 
-Destination: `/obelisk/archive/aborted/YYYYMMDD-[task-name]/`
+Destination:  
+`/obelisk/archive/aborted/YYYYMMDD-[task-name]/`
 
-**Steps:**
+Steps:
+
 1. Create destination directory
 2. Move ALL files from `/obelisk/workspace/` to destination
 3. Verify `/obelisk/workspace/` is empty
@@ -73,7 +55,6 @@ Destination: `/obelisk/archive/aborted/YYYYMMDD-[task-name]/`
 🛑 TASK ABORTED
 
 Archived: /obelisk/archive/aborted/YYYYMMDD-[task-name]/
-Phase: [Detected Phase]
 Reason: [Abort reason]
 
 Workspace cleared. Ready for next task.

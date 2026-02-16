@@ -1,74 +1,60 @@
 ---
 description: Suggest next tasks
 ---
-**CURRENT STATE: TASK SUGGESTION**
+## Required Files
 
-Help the user choose the next task to work on.
+- `/obelisk/design/design-summary.md`
+- `/obelisk/contracts/contracts-summary.md`
 
-> **Scope:** Advisory only. Does NOT create tasks or modify files.
-
----
-
-## Required Context (Read-Only)
-
-- `/obelisk/history/history-log.md`
-- `/obelisk/contracts/contracts-log.md`
-
-If either is missing → STOP.
-
----
-
-### Optional (Quick Context) 
-- /obelisk/history/history-summary.md 
-- /obelisk/contracts/contracts-summary.md 
-
-Purpose: Rapid overview before deep log analysis. 
-
-**Logs remain authoritative for all decisions.**
+If either missing → STOP.
 
 ---
 
 ## Analysis
 
-From **history-log.md**:
-- Last 10 approved tasks
-- Explicit deferred items not marked resolved
-- Rejected/aborted tasks and their reasons
-- Repeated instability or friction patterns
+### From design-summary.md:
 
-From **contracts-log.md**:
+- Active system architecture
+- Defined modules and their status
+- Core design principles
+- Open design questions
+- Deferred architectural work
+
+### From contracts-summary.md:
+
 - Active invariants
-- Recently added or changed contracts
-- Areas lacking enforcement or clarity
-
-Optional (light check only if needed):
-- Briefly scan relevant files mentioned in recent history
-- Check whether declared contracts appear enforced
-- Do NOT design solutions
+- Enforcement requirements
+- System boundaries
+- Explicit non-goals
 
 ---
 
-## Prioritization
+## Task Categories (Priority Order)
 
-Order of importance:
+1. **Deferred Design**
+   - Open design questions requiring resolution
+   - Deferred architectural decisions
+   - Defined but unimplemented modules
 
-1. Risk Containment  
-   (Contract gaps, repeated instability, invariant risks)
+2. **Contract Enforcement**
+   - Declared invariants not yet implemented
+   - Newly introduced constraints requiring integration
 
-2. Deferred Debt  
-   (Explicitly deferred follow-ups)
+3. **Extension**
+   - Logical next steps within existing modules
+   - Structural refinements strengthening architecture
+   - Completing partially implemented flows
 
-3. Continuation  
-   (Logical next step of recent work)
+---
 
-4. Optimization  
-   (Grounded cleanup tasks)
+## Rules
 
-Rules:
-- Skip completed work
-- Skip rejected tasks unless reason is now resolved
-- Avoid speculative or future features
-- Tasks must be concrete and executable as a single scoped task
+- Respect contracts and design boundaries
+- Avoid speculative features outside declared architecture
+- Do not re-suggest completed work
+- Tasks must be concrete and scoped
+- Prefer system-level impact over local optimization
+- If design has many open questions, prioritize architectural clarity first
 
 Select the **top 3 highest-impact tasks**.
 
@@ -76,18 +62,15 @@ Select the **top 3 highest-impact tasks**.
 
 ## Output
 
-``` markdown
-Here are suggested next tasks based on project history and contracts:
+```markdown
+Here are suggested next tasks based on current system state:
 
 1. **[Task Name]**  
-   Category: [Risk Containment | Deferred Debt | Continuation | Optimization]  
-   Why: [Concrete reason grounded in logs]
+   Why: [Concrete reason grounded in design-summary or contracts-summary]
 
 2. **[Task Name]**  
-   Category: [Risk Containment | Deferred Debt | Continuation | Optimization]  
-   Why: [Concrete reason grounded in logs]
+   Why: [Concrete reason grounded in summaries]
 
 3. **[Task Name]**  
-   Category: [Risk Containment | Deferred Debt | Continuation | Optimization]  
-   Why: [Concrete reason grounded in logs]
+   Why: [Concrete reason grounded in summaries]
 ```

@@ -1,12 +1,24 @@
 ---
 description: Creates a new Obelisk task
 ---
-**CURRENT STATE: TASK DISCOVERY**
+## Required Files
 
-Define a new task through discussion.
+- `/obelisk/contracts/contracts-summary.md`
+- `/obelisk/design/design-summary.md`
+- `/obelisk/guidelines/ai-engineering.md`
+
+**If any file is missing:**
+- STOP and report missing file
+- OUTPUT: Use `/init-project` to initialize the project.
+
 
 ---
 
+### Clean Workspace
+
+Delete all files in `/obelisk/workspace/` before proceeding.
+
+---
 ## EXECUTION GUARD (CRITICAL)
 
 Task Discovery defines intent.
@@ -27,7 +39,7 @@ If execution is triggered at any point → **STOP immediately**.
 ```
 
 - Extract task_description = "Add image picker to main screen"
-- Proceed to Preflight
+
 
 **IF no description:**
 
@@ -39,7 +51,6 @@ If execution is triggered at any point → **STOP immediately**.
 - Call `/obelisk/internal/suggest-task.md` (outputs suggestions below)
 - Wait for response
 - Set task_description = [response]
-- Proceed to Preflight
 
 ---
 
@@ -47,7 +58,7 @@ If execution is triggered at any point → **STOP immediately**.
 
 Before starting discovery, assess whether the task qualifies as a hotfix.
 
-**A task qualifies as hotfix if :**
+**A task qualifies as hotfix if:**
 - Scope is narrow, low-risk and clearly defined
 - Change is mechanical and localized
 - No design or architectural decisions required
@@ -65,53 +76,18 @@ Before starting discovery, assess whether the task qualifies as a hotfix.
 - Call `internal/hotfix.md` with description
 - STOP
 
-**If criteria NOT met or uncertain:**
-- Proceed to Preflight (full task flow)
-
----
-## Preflight
-
-### Clean Workspace
-
-- Delete all files in `/obelisk/workspace/`
-
-### Load Inputs
-
-#### Required Files
-- `/obelisk/guidelines/ai-engineering.md`
-- `/obelisk/contracts/contracts-summary.md`
-
-If missing:
-- STOP and report missing file
-- OUTPUT: use `/init-project` to initialized project properly
-
-
 ---
 
 ## Code Reconnaissance (Optional, Bounded)
 
 You MAY read code during Task Discovery, but ONLY to answer:
-- **“Where does this change live?”**
-- **“Which modules / files are likely affected?”**
-- **“Do existing contracts already cover this area?”**
+- **"Where does this change live?"**
+- **"Which modules / files are likely affected?"**
+- **"Do existing contracts already cover this area?"**
 
-You MUST NOT:
-- Design the solution
-- Prototype implementation details
-- Perform broad refactors
+If you find yourself reasoning about *how* to implement → STOP.
 
-**Stop reconnaissance once:**
-- The likely impacted modules / files are identified, AND
-- Any contract impact is known (or confirmed as “none”), AND
-- You can state the task boundary in plain language
-
-If you find yourself reasoning about *how* to implement the change → STOP
-
-
-**Output:**  
-After completing reconnaissance, output only:
-> "Related code reviewed."
-
+**After reconnaissance, output only:** > "Related code reviewed."
 
 ---
 
@@ -128,43 +104,42 @@ These rules apply to all discovery questions in all sets.
 - Required constraints
 
 **Do NOT ask about:**
-- Information already explicitly stated in contracts, the task description, or prior answers
+- Information already explicitly stated in contracts-summary, design-summary, the task description, or prior answers
 - Implementation details (for planning phase)
 
 **Keep questions high-impact. Skip obvious or low-value questions.**
 
 ---
-### Providing Recommendations
+## Providing Recommendations
 
-For decision-based questions, provide a brief recommendation **only when code patterns or constraints clearly favor one option**.
+Provide a brief recommendation only when one option is clearly preferable based on existing constraints (code, contracts, or established best practices).
 
+Place the recommendation immediately after the question (never grouped separately).
 
 **Format:**
+
 ``` markdown
 [Question]
 
 Recommendation: [Option] — [brief reason].
-```
-
-**Example:**
-```
-Where should password reset tokens be stored?
-
-Recommendation: Database table — aligns with existing session storage.
 
 ```
 
-**Skip the recommendation if options are equally valid, evidence is unclear, or user preference is required.**
+Skip recommendation if:
+- No clear objective preference
+- It depends on user preference
+- It requires speculation
+
+If one option is clearly wrong, state the correct choice positively.
 
 ---
 
 ### Set 1: Understanding (MANDATORY)
 
-**Always ask at least one question**, even if task seems clear.
+Always ask at least one clarification question.
 
 **📌 Questions:**
 - What, why, for whom
-- Success criteria (observable completion signals)
 - Scope boundaries (what's in/out)
 - Key constraints or dependencies (including required or preferred external libraries, if any)
 
@@ -255,9 +230,6 @@ Write to `/obelisk/workspace/active-task.md`:
 - [Contracts to preserve]
 - [Technical/business limits]
 
-## Success Criteria
-- [Observable completion signals]
-
 ## Open Questions (if any)
 - [Unresolved ambiguities]
 
@@ -286,7 +258,6 @@ Write to `/obelisk/workspace/contract-changes.md`:
 ```
 
 **Rules:**
-
 - **Only include contract changes explicitly approved by the user during discovery**
 
 ---
@@ -303,20 +274,24 @@ Write to `/obelisk/workspace/discovery-decisions.md`
 **Summary:**
 - [one-line task intent]
 
-**Decisions:**
-- [decision 1]
-- [decision 2]
+**Architecture / Design (if applicable):**
+- [Long-lived structural decisions]
+- [Module boundaries or UX philosophy changes]
+
+**Business Logic (if applicable):**
+- [Core behavior rules affecting system]
 
 **Deferred:**
-- [item if any]
+- [Unresolved items or "None"]
+
 ```
 
 
-**Rules:** 
-- Write concise, self-contained decisions only (no Q/A, no reasoning) 
-- Represents model's understood and user-approved interpretation 
-- Do not copy raw or verbatim user text 
-- Append-only; do not revise earlier entries
+**Rules:**
+- Include ONLY sections with content (skip empty sections).
+- Focus on long-lived, system-level decisions.
+- Exclude implementation details and cosmetic choices.
+- Be concise (under 150 words).
 
 ---
 
@@ -328,8 +303,7 @@ Write to `/obelisk/workspace/discovery-decisions.md`
 | ------------- | --------------------------------------------- |
 | **Goal**      | [One sentence]                                |
 | **Scope**     | ✓ [2-3 key inclusions] ✗ [1-2 key exclusions] |
-| **Success**   | [Primary completion signal]                   |
-| **Contracts** | [brief change]                                |
+| **Contracts** | [brief change or "None"]                      |
 
 **Full definition:** `/obelisk/workspace/active-task.md`
 
@@ -345,6 +319,6 @@ Output EXACTLY this block. No additions.
 
 **Next steps (user-initiated):**
 - Execute: `/run-task`
-- Edit: modify file, then re-run `/define-task`
+- Edit: modify `/obelisk/workspace/active-task.md`, then run `/run-task`
 ```
 

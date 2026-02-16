@@ -1,74 +1,75 @@
 ---
 description: Compact log and regenerate contracts summary
 ---
-**CURRENT STATE: MAINTENANCE**
-
-Compact contract log, then regenerate summary.
-
----
-
-## Preflight
-
-Required:
+## Required Files
 
 - `/obelisk/contracts/contracts-log.md`
 - `/obelisk/contracts/contracts-summary.md`
-- `/obelisk/history-log.md`
+- `/obelisk/design/design-log.md`
 
-Missing → **STOP. Show error.**
-
----
-
-## Stage 1: Process Unprocessed Contracts
-
-Read `/obelisk/contracts/contracts-summary.md`.
-
-1. Move all entries from `## Unprocessed` in `contracts-summary.md` → append to `/obelisk/contracts/contracts-log.md`
-2. Clear the `## Unprocessed` section in `contracts-summary.md`
+Missing → STOP.
 
 ---
 
-## Stage 2: Regenerate Contracts Summary
+## Stage 1 — Process Unprocessed
 
-### Gather Inputs (Read-Only)
-
-Read ALL of the following:
-
-- `/obelisk/contracts/contracts-log.md` (authoritative contract history)
-- `/obelisk/history-log.md` (context of evolution)
-- Codebase (current system state)
+1. Move all entries from `contracts-summary.md → ## Unprocessed` to `contracts-log.md` (append).
+2. Clear `## Unprocessed` in summary.
 
 ---
 
-## Reconciliation Principle
+## Stage 2 — Regenerate Summary
 
-- `contracts-log.md` is the immutable record of declared contracts over time.
-- `history-log.md` provides context for how contracts evolved.
-- Code represents the current implementation state.
-- `contracts-summary.md` is a derived projection representing the currently active contract set.
+### Inputs (Read-Only)
 
-The summary must reconcile:
+- `/obelisk/contracts/contracts-log.md` (authoritative)
+- `/obelisk/design/design-log.md` (evolution context)
+- Codebase (enforcement context only)
 
-- Explicit supersession in contracts-log
-- Evolution context in history-log
-- Current enforcement state in code
-
-`contracts-log.md` MUST NOT be modified or reinterpreted.
+Contracts-log defines declared intent.  
+Design-log provides context.  
+Code does NOT override contracts.
 
 ---
 
-## Regenerate Contracts Summary
+## Analysis Rules
 
-Analyze the full `/obelisk/contracts/contracts-log.md` and produce a reconciled projection that:
+### Supersession
 
-1. Includes contracts that are currently active (not explicitly superseded).
-2. Consolidates duplicates or overlapping contracts without altering, expanding, or narrowing meaning.
-3. Reflects enforcement state when relevant (e.g., active but unenforced).
-4. Excludes contracts explicitly superseded by later entries.
+A contract is superseded if a later log entry:
+- Explicitly replaces it
+- Introduces conflicting requirement in the same domain
+- Removes the domain entirely
+
+If uncertain → keep both and flag.
 
 ---
 
-**Write** (overwrite) `/obelisk/contracts/contracts-summary.md`:
+### Consolidation
+
+Merge contracts expressing the same constraint without altering meaning.
+
+Do NOT merge:
+- Orthogonal constraints
+- Different actors or contexts
+
+If uncertain → do not merge.
+
+---
+
+### Enforcement Gaps
+
+If a contract is declared but not enforced in code:
+- Keep it active
+- Mark as: "Active but unenforced"
+
+Do NOT remove contracts due to missing enforcement.
+
+---
+
+## Write Summary
+
+Overwrite `/obelisk/contracts/contracts-summary.md`:
 
 ```markdown
 # Contracts Summary
@@ -76,65 +77,24 @@ Analyze the full `/obelisk/contracts/contracts-log.md` and produce a reconciled 
 Generated: YYYY-MM-DD
 
 ## System Identity
-- [Consolidated current identity statements]
+[Consolidated identity]
 
 ## Active Contracts
-- [Each currently active contract]
-- [Note if enforcement gaps are detected]
+[Each active contract]
+[Mark enforcement gaps if applicable]
 
 ## Non-Goals
-- [Consolidated explicit non-goals]
+[Consolidated non-goals]
 
 ## Unprocessed
-
 ```
 
 ---
 
-## Supersession
+## Constraints
 
-A contract is superseded if a later entry in contracts-log:
-
-- Explicitly replaces or updates it
-- Introduces a conflicting requirement in the same domain
-- Eliminates the domain entirely
-
-If uncertain, keep both and flag for review.
-
----
-
-## Merging
-
-Merge contracts that express the same constraint.
-
-Do NOT merge:
-- Orthogonal requirements (e.g., length vs symbol rules)
-- Different actors or contexts (e.g., user vs admin)
-
-When uncertain, do NOT merge.
-
----
-
-## History & Code Usage
-
-- contracts-log.md is the authoritative record of declared contracts.
-- history-log.md provides context for how contracts evolved.
-- Code reflects the current implementation state.
-
-history-log and code do NOT override contracts-log.
-
-If conflicts are detected:
-- Trust contracts-log as declared intent.
-- Reflect enforcement gaps or discrepancies in the summary.
-
----
-
-## Rules
-
-- contracts-log.md is authoritative.
-- Remove contracts ONLY if explicitly superseded.
-- Do NOT invent new contracts — only consolidate existing ones.
-- Do not alter, expand, or narrow contract meaning during consolidation.
-- If code does not enforce a contract, do NOT remove it — reflect the enforcement gap.
-- Keep the summary concise (target <2000 tokens).
-- `## Unprocessed` MUST exist (empty after regeneration).
+- contracts-log.md is immutable and authoritative.
+- Remove contracts only if explicitly superseded.
+- Do NOT invent, expand, or narrow contracts.
+- Keep summary concise (less than 1000 tokens).
+- `## Unprocessed` must remain present and empty.

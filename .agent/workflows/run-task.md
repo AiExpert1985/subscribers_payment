@@ -1,14 +1,7 @@
 ---
 description: Auto-execute task until the end
 ---
-
- **CURRENT STATE: RUN**
-
-Execute the active task from its current phase.
-
----
-
-## Preconditions
+## Required Files
 
 - `/obelisk/workspace/active-task.md` **MUST exist**
 
@@ -30,7 +23,6 @@ Determine state from workspace files:
 | `active-task.md`          | DEFINED     | Plan & Implement → Review & Archive |
 | `implementation-notes.md` | IMPLEMENTED | Review & Archive                    |
 
-
 ---
 
 ## Execution
@@ -39,24 +31,13 @@ Run all remaining phases in order until completion or STOP.
 
 ## Phase Workflows
 
-| Phase     | Workflow                                    |
-| --------- | ------------------------------------------- |
-| Implement | `/obelisk/workspace/plan-implement-task.md` |
-| Review    | `/obelisk/workspace/review-archive-task.md` |
+| Phase            | Workflow                                    |
+| ---------------- | ------------------------------------------- |
+| Plan & Implement | `/obelisk/workspace/plan-implement-task.md` |
+| Review & Archive | `/obelisk/workspace/review-archive-task.md` |
 
 
-**Rules**
-
+**Rules:**
 - Read workflow and execute as instructions
 - Missing required files → **STOP**, report paths
 - Workflow STOP → halt immediately
-- Review + Archive are always paired
-
----
-
-## Output
-
-No user-facing output unless:
-- STOP condition
-- Error
-- Final archive confirmation
