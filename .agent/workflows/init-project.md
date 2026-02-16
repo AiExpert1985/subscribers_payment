@@ -227,6 +227,7 @@ _(empty — populated after first maintenance)_
 
 **Content allowed under `## Unprocessed`:**
 
+- A rule is contract-worthy only if violating it risks system integrity, business correctness, or irreversible damage.
 - System identity and boundaries
 - Global business rules
 - Safety-critical rules

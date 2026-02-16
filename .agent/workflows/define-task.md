@@ -257,7 +257,7 @@ Write to `/obelisk/workspace/contract-changes.md`:
 
 ```
 
-**Rules:**
+- A rule is contract-worthy only if violating it risks system integrity, business correctness, or irreversible damage.
 - **Only include contract changes explicitly approved by the user during discovery**
 
 ---
