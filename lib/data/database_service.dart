@@ -12,12 +12,15 @@ import 'package:path/path.dart';
 class DatabaseService {
   static Database? _database;
   static const String _databaseName = 'subscribers_payments.db';
-  static const int _databaseVersion = 1;
+  static const int _databaseVersion = 2;
 
   // Table names
   static const String tableSubscriberGroups = 'subscriber_groups';
   static const String tableAccounts = 'accounts';
   static const String tablePayments = 'payments';
+
+  // Pagination defaults
+  static const int defaultPageSize = 50;
 
   /// Gets the database instance, initializing it if necessary
   Future<Database> get database async {
@@ -36,6 +39,9 @@ class DatabaseService {
       version: _databaseVersion,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
+      onConfigure: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
+      },
     );
   }
 
@@ -65,8 +71,9 @@ class DatabaseService {
         reference_account_number INTEGER NOT NULL,
         payment_date INTEGER NOT NULL,
         amount REAL NOT NULL,
+        subscriber_name TEXT,
         type TEXT,
-        collector_stamp TEXT,
+        stamp_number TEXT,
         UNIQUE (reference_account_number, payment_date, amount)
       )
     ''');
@@ -74,7 +81,15 @@ class DatabaseService {
 
   /// Handles database schema upgrades
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Migration logic will be added here in future versions
+    if (oldVersion < 2) {
+      // Migration from v1: add subscriber_name, rename collector_stamp
+      await db.execute(
+        'ALTER TABLE $tablePayments ADD COLUMN subscriber_name TEXT',
+      );
+      await db.execute(
+        'ALTER TABLE $tablePayments RENAME COLUMN collector_stamp TO stamp_number',
+      );
+    }
   }
 
   /// Closes the database connection
@@ -86,7 +101,7 @@ class DatabaseService {
     }
   }
 
-  // CRUD methods for subscriber_groups
+  // ─── Subscriber Groups ───────────────────────────────────────────
 
   /// Inserts a new subscriber group
   Future<int> insertSubscriberGroup(Map<String, dynamic> group) async {
@@ -132,7 +147,7 @@ class DatabaseService {
     );
   }
 
-  // CRUD methods for accounts
+  // ─── Accounts ────────────────────────────────────────────────────
 
   /// Inserts a new account
   Future<int> insertAccount(Map<String, dynamic> account) async {
@@ -169,6 +184,17 @@ class DatabaseService {
     );
   }
 
+  /// Finds an account by account number
+  Future<Map<String, dynamic>?> getAccountByNumber(int accountNumber) async {
+    final db = await database;
+    final results = await db.query(
+      tableAccounts,
+      where: 'account_number = ?',
+      whereArgs: [accountNumber],
+    );
+    return results.isNotEmpty ? results.first : null;
+  }
+
   /// Updates an account
   Future<int> updateAccount(int id, Map<String, dynamic> account) async {
     final db = await database;
@@ -186,7 +212,7 @@ class DatabaseService {
     return await db.delete(tableAccounts, where: 'id = ?', whereArgs: [id]);
   }
 
-  // CRUD methods for payments
+  // ─── Payments ────────────────────────────────────────────────────
 
   /// Inserts a new payment
   Future<int> insertPayment(Map<String, dynamic> payment) async {
@@ -194,10 +220,63 @@ class DatabaseService {
     return await db.insert(tablePayments, payment);
   }
 
-  /// Gets all payments
-  Future<List<Map<String, dynamic>>> getAllPayments() async {
+  /// Inserts payments in batch, skipping duplicates via INSERT OR IGNORE.
+  /// Returns the number of successfully inserted rows.
+  Future<int> insertPaymentBatch(List<Map<String, dynamic>> payments) async {
     final db = await database;
-    return await db.query(tablePayments);
+    int inserted = 0;
+
+    await db.transaction((txn) async {
+      for (final payment in payments) {
+        final result = await txn.insert(
+          tablePayments,
+          payment,
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
+        if (result != 0) inserted++;
+      }
+    });
+
+    return inserted;
+  }
+
+  /// Gets paginated payments with optional per-column filters.
+  ///
+  /// [filters] keys match column names: reference_account_number,
+  /// subscriber_name, payment_date, amount, stamp_number.
+  /// Non-empty filter values are applied as LIKE '%value%' (AND logic).
+  Future<List<Map<String, dynamic>>> getPaymentsPaginated({
+    int page = 0,
+    int pageSize = defaultPageSize,
+    Map<String, String> filters = const {},
+  }) async {
+    final db = await database;
+    final whereClause = _buildWhereClause(filters);
+
+    return await db.query(
+      tablePayments,
+      where: whereClause.clause,
+      whereArgs: whereClause.args,
+      orderBy: 'id DESC',
+      limit: pageSize,
+      offset: page * pageSize,
+    );
+  }
+
+  /// Gets total payment count with optional filters (for pagination).
+  Future<int> getTotalPaymentCount({
+    Map<String, String> filters = const {},
+  }) async {
+    final db = await database;
+    final whereClause = _buildWhereClause(filters);
+
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) as count FROM $tablePayments'
+      '${whereClause.clause != null ? " WHERE ${whereClause.clause}" : ""}',
+      whereClause.args,
+    );
+
+    return result.first['count'] as int;
   }
 
   /// Gets a payment by ID
@@ -239,4 +318,55 @@ class DatabaseService {
     final db = await database;
     return await db.delete(tablePayments, where: 'id = ?', whereArgs: [id]);
   }
+
+  // ─── Import Helpers ──────────────────────────────────────────────
+
+  /// Finds or creates an account and its subscriber group for import.
+  ///
+  /// If the account number already exists, returns the existing account ID.
+  /// Otherwise, creates a new subscriber group (using subscriberName if
+  /// provided) and a new account linked to it.
+  Future<int> findOrCreateAccountAndGroup(
+    int accountNumber, {
+    String? subscriberName,
+  }) async {
+    final existing = await getAccountByNumber(accountNumber);
+    if (existing != null) return existing['id'] as int;
+
+    final db = await database;
+    final groupId = await db.insert(tableSubscriberGroups, {
+      'name': subscriberName ?? '',
+    });
+
+    return await db.insert(tableAccounts, {
+      'account_number': accountNumber,
+      'subscriber_group_id': groupId,
+    });
+  }
+
+  // ─── Private Helpers ─────────────────────────────────────────────
+
+  /// Builds a WHERE clause from column filters.
+  _WhereClause _buildWhereClause(Map<String, String> filters) {
+    final conditions = <String>[];
+    final args = <String>[];
+
+    for (final entry in filters.entries) {
+      if (entry.value.trim().isEmpty) continue;
+
+      conditions.add('CAST(${entry.key} AS TEXT) LIKE ?');
+      args.add('%${entry.value.trim()}%');
+    }
+
+    if (conditions.isEmpty) return _WhereClause(null, []);
+    return _WhereClause(conditions.join(' AND '), args);
+  }
+}
+
+/// Helper class for WHERE clause construction.
+class _WhereClause {
+  final String? clause;
+  final List<String> args;
+
+  _WhereClause(this.clause, this.args);
 }

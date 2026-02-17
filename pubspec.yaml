@@ -41,6 +41,15 @@ dependencies:
   # SQLite database
   sqflite: ^2.4.2
   path: ^1.9.0
+  
+  # Excel file parsing
+  excel: ^4.0.6
+  
+  # File picker for import
+  file_picker: ^10.3.10
+  
+  # Date formatting
+  intl: ^0.20.0
 
 dev_dependencies:
   flutter_test:
