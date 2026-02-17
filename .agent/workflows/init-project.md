@@ -37,6 +37,19 @@ Understand the project and identify contract and design candidates.
 
 ---
 
+## Contract vs. Design Boundary
+
+**Contract:** A business invariant that must remain true regardless of implementation.
+If violated, business correctness or historical data integrity breaks.
+
+**Design:** How the system is built (tech stack, schema, architecture, modules, UI, patterns).
+
+**Boundary test:**
+- Must stay true even if the system is rebuilt differently → Contract
+- Describes structure, schema, tech, or implementation detail → Design
+
+---
+
 ## Discovery Rules
 
 **Questioning Rules**
