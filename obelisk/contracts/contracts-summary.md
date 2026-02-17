@@ -13,6 +13,14 @@ _(empty — populated after first maintenance)_
 
 ## Unprocessed
 
+### 2026-02-17 | Accounts Screen
+
+**Action:** create
+**Change:**
+- **Delete Confirmation**: All destructive delete actions (group, account, payment) must present a confirmation dialog before executing. No silent deletes.
+
+---
+
 ### System Identity & Boundaries
 
 - Payment consolidation system for 11+ years of Excel-based historical payment records

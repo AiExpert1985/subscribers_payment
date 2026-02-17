@@ -344,6 +344,22 @@ class DatabaseService {
     });
   }
 
+  /// Searches for subscriber group IDs that contain an account
+  /// whose number matches the query (LIKE '%query%').
+  Future<List<int>> searchGroupsByAccountNumber(String query) async {
+    final db = await database;
+    final results = await db.rawQuery(
+      '''
+      SELECT DISTINCT sg.id
+      FROM $tableSubscriberGroups sg
+      INNER JOIN $tableAccounts a ON a.subscriber_group_id = sg.id
+      WHERE CAST(a.account_number AS TEXT) LIKE ?
+    ''',
+      ['%$query%'],
+    );
+    return results.map((r) => r['id'] as int).toList();
+  }
+
   // ─── Private Helpers ─────────────────────────────────────────────
 
   /// Builds a WHERE clause from column filters.
