@@ -302,6 +302,45 @@ class DatabaseService {
     );
   }
 
+  /// Gets payments for a set of account numbers with optional date bounds.
+  ///
+  /// [fromDate] and [toDate] are Unix timestamps in milliseconds, inclusive.
+  Future<List<Map<String, dynamic>>> getPaymentsByAccountNumbers({
+    required List<int> accountNumbers,
+    int? fromDate,
+    int? toDate,
+  }) async {
+    if (accountNumbers.isEmpty) return [];
+
+    final db = await database;
+    final conditions = <String>[];
+    final args = <Object?>[];
+
+    final accountPlaceholders = List.filled(
+      accountNumbers.length,
+      '?',
+    ).join(',');
+    conditions.add('reference_account_number IN ($accountPlaceholders)');
+    args.addAll(accountNumbers);
+
+    if (fromDate != null) {
+      conditions.add('payment_date >= ?');
+      args.add(fromDate);
+    }
+    if (toDate != null) {
+      conditions.add('payment_date <= ?');
+      args.add(toDate);
+    }
+
+    final whereClause = conditions.join(' AND ');
+    return await db.query(
+      tablePayments,
+      where: whereClause,
+      whereArgs: args,
+      orderBy: 'payment_date ASC, id ASC',
+    );
+  }
+
   /// Updates a payment
   Future<int> updatePayment(int id, Map<String, dynamic> payment) async {
     final db = await database;
