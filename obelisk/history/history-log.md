@@ -2,3 +2,7 @@
 
 ---
 
+## 2026-02-17 | Fix databaseFactory Not Initialized on Windows | APPROVED
+
+---
+

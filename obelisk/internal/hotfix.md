@@ -12,41 +12,19 @@ If any are missing → **STOP** and report
 
 ---
 
-## Execution Rules (Strict)
+## Execution
 
-**MUST:**
-- Perform exactly one localized change
-- Preserve all existing behavior and contracts
-- Modify minimum number of files
-- Keep change fully reversible
+Perform exactly the mechanical change described.
 
-**MUST NOT:**
-- Introduce new concepts, abstractions, or features
-- Expand scope beyond original task description
-- Perform refactors or multi-step changes
+Before applying:
+- Identify the exact file(s) and line(s) to modify
+- Confirm the change preserves existing behavior and contracts
 
-**If scope grows or uncertainty appears → STOP**
-
----
-
-## Apply Change
-
-**Mental planning (required):**
-- Identify exact file(s) and line(s) to change
-- Verify change aligns with existing code patterns
-- Confirm no side effects or contract violations
-
-**Then execute:**
-- Apply the minimal change directly
-- No formal implementation-notes.md artifact
-- No user questions
-- Stop if anything unexpected appears
-
-**If the change requires:**
-- Multiple steps
-- Coordination across files
-- Design decisions
-→ **STOP** (should have been full task)
+Then:
+- Apply only the minimal necessary modification
+- Do not expand scope, refactor, rename, or touch code outside the direct fix
+- If scope grows or uncertainty appears → STOP and report
+- If anything unexpected appears → STOP
 
 ---
 

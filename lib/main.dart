@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'payments/payments_screen.dart';
 
 void main() {
+  // Initialize FFI database factory for desktop (Windows/macOS/Linux)
+  databaseFactory = databaseFactoryFfi;
   runApp(const ProviderScope(child: MyApp()));
 }
 
