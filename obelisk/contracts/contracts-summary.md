@@ -16,10 +16,6 @@ _(empty — populated after first maintenance)_
 ### System Identity & Boundaries
 
 - Payment consolidation system for 11+ years of Excel-based historical payment records
-- Single-user Flutter desktop application (Windows primary target)
-- Arabic-only (RTL) interface — no multi-language support
-- Local SQLite database — no cloud, no multi-user, no sync
-- Tech stack: Flutter, SQLite, Riverpod 3, go_router
 
 ### Core Invariants
 
@@ -33,15 +29,6 @@ _(empty — populated after first maintenance)_
 
 5. **Import Auto-Create**: When importing a payment with an unknown `reference_account_number`, the system auto-creates a new subscriber group and account entry.
 
-### Data Model Contracts
-
-**Three tables only:**
-
-- `subscriber_groups`: `id` (PK), `subscriber_name` (optional, editable)
-- `accounts`: `id` (PK), `account_number` (UNIQUE, required), `subscriber_group_id` (FK → subscriber_groups, required)
-- `payments`: `id` (PK), `reference_account_number` (required), `amount` (decimal, required), `payment_date` (date, required), `stamp_number` (optional), `subscriber_name` (optional), `type` (optional)
-
-**Key constraint**: `payments.reference_account_number` has NO foreign key to `accounts`. Mapping is resolved dynamically at query time.
 
 ### Deletion Rules
 
