@@ -24,6 +24,8 @@ class _ColumnMapping {
   final int dateIndex;
   final int? subscriberNameIndex;
   final int? stampIndex;
+  final int? typeIndex;
+  final int? addressIndex;
 
   _ColumnMapping({
     required this.accountIndex,
@@ -31,6 +33,8 @@ class _ColumnMapping {
     required this.dateIndex,
     this.subscriberNameIndex,
     this.stampIndex,
+    this.typeIndex,
+    this.addressIndex,
   });
 }
 
@@ -87,6 +91,8 @@ class ExcelParser {
     int? dateIdx;
     int? subscriberNameIdx;
     int? stampIdx;
+    int? typeIdx;
+    int? addressIdx;
 
     for (int i = 0; i < headerRow.length; i++) {
       final cell = headerRow[i];
@@ -107,6 +113,11 @@ class ExcelParser {
         subscriberNameIdx = i;
       } else if (stampIdx == null && _matchesAlias(headerText, stampAliases)) {
         stampIdx = i;
+      } else if (typeIdx == null && _matchesAlias(headerText, typeAliases)) {
+        typeIdx = i;
+      } else if (addressIdx == null &&
+          _matchesAlias(headerText, addressAliases)) {
+        addressIdx = i;
       }
     }
 
@@ -120,6 +131,8 @@ class ExcelParser {
       dateIndex: dateIdx,
       subscriberNameIndex: subscriberNameIdx,
       stampIndex: stampIdx,
+      typeIndex: typeIdx,
+      addressIndex: addressIdx,
     );
   }
 
@@ -177,6 +190,22 @@ class ExcelParser {
       if (stamp != null) {
         final stampStr = stamp.toString().trim();
         if (stampStr.isNotEmpty) result['stamp_number'] = stampStr;
+      }
+    }
+
+    if (mapping.typeIndex != null) {
+      final type = _extractCellValue(row, mapping.typeIndex!);
+      if (type != null) {
+        final typeStr = type.toString().trim();
+        if (typeStr.isNotEmpty) result['type'] = typeStr;
+      }
+    }
+
+    if (mapping.addressIndex != null) {
+      final address = _extractCellValue(row, mapping.addressIndex!);
+      if (address != null) {
+        final addressStr = address.toString().trim();
+        if (addressStr.isNotEmpty) result['address'] = addressStr;
       }
     }
 

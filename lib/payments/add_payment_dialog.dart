@@ -15,6 +15,8 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
   final _amountController = TextEditingController();
   final _subscriberNameController = TextEditingController();
   final _stampController = TextEditingController();
+  final _typeController = TextEditingController();
+  final _addressController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
 
   @override
@@ -23,6 +25,8 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
     _amountController.dispose();
     _subscriberNameController.dispose();
     _stampController.dispose();
+    _typeController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 
@@ -102,6 +106,22 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
                     border: OutlineInputBorder(),
                   ),
                 ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _typeController,
+                  decoration: const InputDecoration(
+                    labelText: 'النوع',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _addressController,
+                  decoration: const InputDecoration(
+                    labelText: 'العنوان',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
               ],
             ),
           ),
@@ -142,6 +162,12 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
       stampNumber: _stampController.text.trim().isEmpty
           ? null
           : _stampController.text.trim(),
+      type: _typeController.text.trim().isEmpty
+          ? null
+          : _typeController.text.trim(),
+      address: _addressController.text.trim().isEmpty
+          ? null
+          : _addressController.text.trim(),
     );
 
     Navigator.of(context).pop(payment);

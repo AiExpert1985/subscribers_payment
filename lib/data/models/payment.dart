@@ -15,6 +15,7 @@ class Payment {
   final String? subscriberName;
   final String? type;
   final String? stampNumber;
+  final String? address;
 
   Payment({
     this.id,
@@ -24,6 +25,7 @@ class Payment {
     this.subscriberName,
     this.type,
     this.stampNumber,
+    this.address,
   });
 
   /// Creates a Payment from a database map
@@ -36,6 +38,7 @@ class Payment {
       subscriberName: map['subscriber_name'] as String?,
       type: map['type'] as String?,
       stampNumber: map['stamp_number'] as String?,
+      address: map['address'] as String?,
     );
   }
 
@@ -49,6 +52,7 @@ class Payment {
       if (subscriberName != null) 'subscriber_name': subscriberName,
       if (type != null) 'type': type,
       if (stampNumber != null) 'stamp_number': stampNumber,
+      if (address != null) 'address': address,
     };
   }
 
@@ -60,6 +64,7 @@ class Payment {
     String? subscriberName,
     String? type,
     String? stampNumber,
+    String? address,
   }) {
     return Payment(
       id: id ?? this.id,
@@ -70,6 +75,7 @@ class Payment {
       subscriberName: subscriberName ?? this.subscriberName,
       type: type ?? this.type,
       stampNumber: stampNumber ?? this.stampNumber,
+      address: address ?? this.address,
     );
   }
 
@@ -78,7 +84,7 @@ class Payment {
       'Payment(id: $id, referenceAccountNumber: $referenceAccountNumber, '
       'paymentDate: $paymentDate, amount: $amount, '
       'subscriberName: $subscriberName, type: $type, '
-      'stampNumber: $stampNumber)';
+      'stampNumber: $stampNumber, address: $address)';
 
   @override
   bool operator ==(Object other) {
@@ -90,7 +96,8 @@ class Payment {
         other.amount == amount &&
         other.subscriberName == subscriberName &&
         other.type == type &&
-        other.stampNumber == stampNumber;
+        other.stampNumber == stampNumber &&
+        other.address == address;
   }
 
   @override
@@ -102,5 +109,6 @@ class Payment {
     subscriberName,
     type,
     stampNumber,
+    address,
   );
 }

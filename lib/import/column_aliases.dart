@@ -51,3 +51,17 @@ const List<String> stampAliases = [
   'الطابع',
   'رقم الطابع',
 ];
+
+/// Aliases for type column (OPTIONAL)
+const List<String> typeAliases = [
+  'النوع',
+  'نوع',
+  'type',
+];
+
+/// Aliases for address column (OPTIONAL)
+const List<String> addressAliases = [
+  'العنوان',
+  'عنوان',
+  'address',
+];

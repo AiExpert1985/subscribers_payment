@@ -48,10 +48,21 @@ If execution is triggered at any point → **STOP immediately**.
 /define-task
 ```
 
-- Output: "Describe your task:"
-- Call `/obelisk/internal/suggest-task.md` (outputs suggestions below)
-- Wait for response
-- Set task_description = [response]
+
+Output exactly:
+Describe your task, or type 'suggest' for task suggestions.
+
+STOP. Wait for response.
+
+- If response is 'suggest':
+  - Call `/obelisk/internal/suggest-task.md`
+  - Output: "Choose a suggestion or describe your task:"
+  - Wait for response
+  - Set task_description = [response]
+
+- Otherwise:
+  - Set task_description = [response]
+
 
 ---
 
@@ -75,8 +86,9 @@ Before starting discovery, assess whether the task qualifies as a hotfix.
 **If criteria met:**
 - Output: "Detected simple fix. Running hotfix path."
 - Hotfix is a special execution path and is allowed to execute immediately from this workflow.
-- Call `/obelisk/internal/hotfix.md` with task_description
+- Call `obelisk/internal/hotfix.md` with task_description
 - STOP
+
 
 ---
 
@@ -336,3 +348,4 @@ Output EXACTLY this block. No additions.
 - Execute: `/run-task`
 - Edit: modify `/obelisk/workspace/active-task.md`, then run `/run-task`
 ```
+

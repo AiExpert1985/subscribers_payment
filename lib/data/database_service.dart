@@ -12,7 +12,7 @@ import 'package:path/path.dart';
 class DatabaseService {
   static Database? _database;
   static const String _databaseName = 'subscribers_payments.db';
-  static const int _databaseVersion = 2;
+  static const int _databaseVersion = 3;
 
   // Table names
   static const String tableSubscriberGroups = 'subscriber_groups';
@@ -74,6 +74,7 @@ class DatabaseService {
         subscriber_name TEXT,
         type TEXT,
         stamp_number TEXT,
+        address TEXT,
         UNIQUE (reference_account_number, payment_date, amount)
       )
     ''');
@@ -88,6 +89,12 @@ class DatabaseService {
       );
       await db.execute(
         'ALTER TABLE $tablePayments RENAME COLUMN collector_stamp TO stamp_number',
+      );
+    }
+    if (oldVersion < 3) {
+      // Migration from v2: add address column
+      await db.execute(
+        'ALTER TABLE $tablePayments ADD COLUMN address TEXT',
       );
     }
   }
@@ -419,6 +426,11 @@ class DatabaseService {
   // ─── Private Helpers ─────────────────────────────────────────────
 
   /// Builds a WHERE clause from column filters.
+  ///
+  /// Special keys:
+  /// - `payment_date_from` → `payment_date >= value` (timestamp string)
+  /// - `payment_date_to`   → `payment_date <= value` (timestamp string)
+  /// All other keys use CAST(column AS TEXT) LIKE '%value%'.
   _WhereClause _buildWhereClause(Map<String, String> filters) {
     final conditions = <String>[];
     final args = <String>[];
@@ -426,8 +438,16 @@ class DatabaseService {
     for (final entry in filters.entries) {
       if (entry.value.trim().isEmpty) continue;
 
-      conditions.add('CAST(${entry.key} AS TEXT) LIKE ?');
-      args.add('%${entry.value.trim()}%');
+      if (entry.key == 'payment_date_from') {
+        conditions.add('payment_date >= ?');
+        args.add(entry.value);
+      } else if (entry.key == 'payment_date_to') {
+        conditions.add('payment_date <= ?');
+        args.add(entry.value);
+      } else {
+        conditions.add('CAST(${entry.key} AS TEXT) LIKE ?');
+        args.add('%${entry.value.trim()}%');
+      }
     }
 
     if (conditions.isEmpty) return _WhereClause(null, []);

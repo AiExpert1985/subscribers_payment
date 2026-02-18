@@ -5,7 +5,7 @@ import '../data/models/payment.dart';
 /// Builds and writes an Excel file from a list of payments.
 ///
 /// Column order matches the on-screen payments table:
-/// account number, subscriber name, date, amount, stamp number.
+/// account number, subscriber name, date, amount, stamp number, type, address.
 class PaymentExportService {
   static const _headers = [
     'رقم الحساب',
@@ -13,6 +13,8 @@ class PaymentExportService {
     'التاريخ',
     'المبلغ',
     'رقم الختم',
+    'النوع',
+    'العنوان',
   ];
 
   /// Builds an Excel workbook from [payments] and returns the raw bytes.
@@ -49,6 +51,8 @@ class PaymentExportService {
         _formatDate(p.paymentDate),
         p.amount.toString(),
         p.stampNumber ?? '',
+        p.type ?? '',
+        p.address ?? '',
       ];
 
       for (var col = 0; col < cells.length; col++) {
