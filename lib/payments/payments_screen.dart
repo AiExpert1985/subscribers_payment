@@ -7,6 +7,7 @@ import '../data/models/payment.dart';
 import '../data/providers.dart';
 import '../import/import_service.dart';
 import 'add_payment_dialog.dart';
+import 'payment_export_service.dart';
 import 'payments_providers.dart';
 
 /// Main payments screen with import, search, paginated table, and inline editing.
@@ -34,6 +35,9 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
 
   // Import loading state
   bool _isImporting = false;
+
+  // Export loading state
+  bool _isExporting = false;
 
   @override
   void dispose() {
@@ -109,6 +113,17 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
                 )
               : const Icon(Icons.upload_file),
           label: const Text('استيراد ملف التسديدات'),
+        ),
+        FilledButton.tonalIcon(
+          onPressed: _isExporting ? null : _exportToExcel,
+          icon: _isExporting
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.download),
+          label: const Text('تصدير إلى Excel'),
         ),
         if (importResult != null) _buildImportSummary(importResult),
       ],
@@ -478,6 +493,56 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
     ref.invalidate(totalPaymentCountProvider);
 
     setState(() => _isImporting = false);
+  }
+
+  Future<void> _exportToExcel() async {
+    setState(() => _isExporting = true);
+
+    try {
+      final filters = ref.read(paymentFiltersProvider);
+      final db = ref.read(databaseServiceProvider);
+      final rows = await db.getPaymentsFiltered(filters: filters);
+      final payments = rows.map((r) => Payment.fromMap(r)).toList();
+
+      final savePath = await FilePicker.platform.saveFile(
+        dialogTitle: 'حفظ ملف التسديدات',
+        fileName: 'تسديدات.xlsx',
+        type: FileType.custom,
+        allowedExtensions: ['xlsx'],
+      );
+
+      if (savePath == null) return;
+
+      final exportService = PaymentExportService();
+      final bytes = exportService.buildExcelBytes(payments);
+
+      if (bytes == null) {
+        _showExportError('فشل إنشاء ملف Excel');
+        return;
+      }
+
+      exportService.writeToFile(savePath, bytes);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('تم تصدير ${payments.length} سجل بنجاح'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      _showExportError('خطأ أثناء التصدير: $e');
+    } finally {
+      if (mounted) setState(() => _isExporting = false);
+    }
+  }
+
+  void _showExportError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
   }
 
   Future<void> _confirmDelete(Payment payment) async {

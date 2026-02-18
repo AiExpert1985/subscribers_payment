@@ -279,6 +279,23 @@ class DatabaseService {
     return result.first['count'] as int;
   }
 
+  /// Gets all payments matching the given filters, with no pagination limit.
+  ///
+  /// Uses the same filter logic as [getPaymentsPaginated]. Intended for export.
+  Future<List<Map<String, dynamic>>> getPaymentsFiltered({
+    Map<String, String> filters = const {},
+  }) async {
+    final db = await database;
+    final whereClause = _buildWhereClause(filters);
+
+    return await db.query(
+      tablePayments,
+      where: whereClause.clause,
+      whereArgs: whereClause.args,
+      orderBy: 'id DESC',
+    );
+  }
+
   /// Gets a payment by ID
   Future<Map<String, dynamic>?> getPaymentById(int id) async {
     final db = await database;
