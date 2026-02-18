@@ -29,7 +29,7 @@ Extract from `active-task.md` header.
 Append to `/obelisk/history/history-log.md`:
 
 ```markdown
-## YYYY-MM-DD | [Task Name] | ABORTED
+## YYYYMMDD-HHMM | [Task Name] | ABORTED
 
 ---
 ```
@@ -40,7 +40,7 @@ Append to `/obelisk/history/history-log.md`:
 ## Archive Workspace
 
 Destination:  
-`/obelisk/archive/aborted/YYYYMMDD-[task-name]/`
+`/obelisk/archive/aborted/YYYYMMDD-HHMM-task-name/`
 
 Steps:
 

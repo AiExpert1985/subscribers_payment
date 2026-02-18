@@ -34,7 +34,7 @@ Append the following block as the last entry within the section `## Unprocessed`
 in `/obelisk/history/history-log.md`:
 
 ``` markdown
-## YYYY-MM-DD | [Hotfix Name] | HOTFIX
+## YYYYMMDD-HHMM | [Hotfix Name] | HOTFIX
 
 ---
 

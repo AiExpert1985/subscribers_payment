@@ -93,14 +93,14 @@ Write to `/obelisk/workspace/review-notes.md`:
 1. Append to `/obelisk/history/history-log.md`:
 
 ``` markdown
-## YYYY-MM-DD | [Task Name] | REJECTED
+## YYYYMMDD-HHMM | [Task Name] | REJECTED
 
 ---
 
 ```
 
 2. Archive workspace to  
-   `/obelisk/archive/rejected/YYYYMMDD-[task-name]/`
+   `/obelisk/archive/rejected/YYYYMMDD-HHMM-[task-name]/`
    
 3. Clear `/obelisk/workspace/`
 
@@ -108,7 +108,7 @@ Write to `/obelisk/workspace/review-notes.md`:
 
 ``` markdown
 ⚠️ TASK CLOSED — REJECTED
-Archived: /obelisk/archive/rejected/YYYYMMDD-[task-name]/
+Archived: /obelisk/archive/rejected/YYYYMMDD-HHMM-[task-name]/
 
 ```
 
@@ -123,7 +123,7 @@ STOP.
 Append to `/obelisk/history/history-log.md`:
 
 ``` markdown
-## YYYY-MM-DD | [Task Name] | APPROVED
+## YYYYMMDD-HHMM | [Task Name] | APPROVED
 
 ---
 
@@ -141,7 +141,7 @@ Append its content exactly as written to
 **Format:**
 
 ``` markdown
-## YYYY-MM-DD | [Task Name]
+## YYYYMMDD-HHMM | [Task Name]
 
 [Contract change content]
 
@@ -166,7 +166,7 @@ Append its content (excluding Summary and Deferred) to:
 **Format:**
 
 ``` markdown
-## YYYY-MM-DD | [Task Name]
+## YYYYMMDD-HHMM | [Task Name]
 
 [Architecture / Design and Business Logic sections exactly as written]
 
@@ -178,7 +178,7 @@ Append its content (excluding Summary and Deferred) to:
 ### 4 — Archive Workspace
 
 Archive all files to:
-`/obelisk/archive/completed/YYYYMMDD-[task-name]/`
+`/obelisk/archive/completed/YYYYMMDD-HHMM-[task-name]/`
 
 Clear `/obelisk/workspace/`
 
@@ -198,7 +198,7 @@ If `/obelisk/design/design-log.md` exceeds 4000 tokens:
 
 ```
 ✅ TASK CLOSED — APPROVED
-Archived: /obelisk/archive/completed/YYYYMMDD-[task-name]/
+Archived: /obelisk/archive/completed/YYYYMMDD-HHMM-task-name/
 ```
 
 
