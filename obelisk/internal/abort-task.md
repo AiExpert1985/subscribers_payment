@@ -40,7 +40,7 @@ Append to `/obelisk/history/history-log.md`:
 ## Archive Workspace
 
 Destination:  
-`/obelisk/archive/aborted/YYYYMMDD-HHMM-task-name/`
+`/obelisk/archive/aborted/YYYYMMDD-HHMM-[task-name]/`
 
 Steps:
 
