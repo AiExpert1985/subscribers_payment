@@ -174,7 +174,7 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
       builder: (context, constraints) => SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: ConstrainedBox(
-          constraints: BoxConstraints(minWidth: constraints.maxWidth),
+          constraints: BoxConstraints(minWidth: constraints.maxWidth, maxWidth: constraints.maxWidth),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,

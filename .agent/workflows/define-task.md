@@ -47,10 +47,19 @@ If execution is triggered at any point → **STOP immediately**.
 /define-task
 ```
 
-- Output: "Describe your task:" 
-- Call `/obelisk/internal/suggest-task.md` (outputs suggestions below) 
-- Wait for response 
-- Set task_description = [response]
+Output exactly:
+Describe your task, or type 'suggest' for task suggestions.
+
+STOP. Wait for response.
+
+- If response is 'suggest':
+  - Call `/obelisk/internal/suggest-task.md`
+  - Output: "Choose a suggestion or describe your task:"
+  - Wait for response
+  - Set task_description = [response]
+
+- Otherwise:
+  - Set task_description = [response]
 
 
 ---
