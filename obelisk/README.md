@@ -1,3 +1,4 @@
+
 # Obelisk Framework
 
 _A contract-driven, phase-separated collaboration protocol for stateless AI work on long-lived systems._
@@ -109,9 +110,9 @@ It intentionally trades early friction for long-term stability.
 | Command | Purpose |
 |----------|----------|
 | `/init-project` | Initialize project structure |
-| `/define-task [description]` | Define and freeze a task |
-| `/run-task` | Plan, implement, review, archive |
-| `/ask` | Query project knowledge |
+| `/define-task [description]` | Define task and create execution plan |
+| `/run-task` | Implement, review, archive |
+| `/ask-project` | Query project knowledge |
 | `/help` | Show available commands |
 
 ---
@@ -122,22 +123,30 @@ It intentionally trades early friction for long-term stability.
 
 1. Initialize project:
 ```
+
 /init-project
+
 ```
 
 2. Define a task:
 ```
+
 /define-task Add user authentication
+
 ```
 
 3. Execute:
 ```
+
 /run-task
+
 ```
 
 4. Ask questions anytime:
 ```
-/ask What contracts exist?
+
+/ask-project What contracts exist?
+
 ```
 
 ---
@@ -158,7 +167,9 @@ Outcome: durable foundation independent of chat sessions.
 
 ### Task Cycle (Repeats)
 ```
-task → plan → implement → review → archive
+
+define (task + plan) → implement → review → archive
+
 ```
 
 Execution resumes from current phase if interrupted.
@@ -181,15 +192,15 @@ Hotfixes bypass planning but are always recorded in history.
 ### Task Execution
 
 #### `/define-task`
-Freeze intent before execution.  
+Discover intent, freeze task, and create execution plan.  
 Prevents guessing, scope drift, and accidental architecture.
 
 #### `/run-task`
-Plan → implement → review → archive.
+Implement → review → archive.
 
-- Planning constrains execution.
-- Review validates against contracts and intent.
-- Archive preserves traceability.
+- Implementation follows the frozen plan
+- Review validates against contracts and intent
+- Archive preserves traceability
 
 The system evolves with explicit authority and no silent drift.
 
@@ -210,7 +221,6 @@ The system evolves with explicit authority and no silent drift.
 ├── archive/
 │   ├── completed/
 │   ├── rejected/
-│   └── aborted/
 ├── guidelines/
 │   └── ai-engineering.md       # Execution constraints
 └── internal/

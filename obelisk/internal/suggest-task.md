@@ -1,15 +1,6 @@
 ---
 description: Suggest next tasks
 ---
-## Required Files
-
-- `/obelisk/design/design-summary.md`
-- `/obelisk/contracts/contracts-summary.md`
-
-If either missing → STOP.
-
----
-
 ## Analysis
 
 ### From design-summary.md:
@@ -71,6 +62,4 @@ Here are suggested next tasks based on current system state:
 2. **[Task Name]**  
    Why: [Concrete reason grounded in summaries]
 
-3. **[Task Name]**  
-   Why: [Concrete reason grounded in summaries]
 ```

@@ -1,7 +1,6 @@
 ---
 description: Creates a new Obelisk task
 ---
-
 ## Required Files
 
 - `/obelisk/contracts/contracts-summary.md`
@@ -48,20 +47,10 @@ If execution is triggered at any point → **STOP immediately**.
 /define-task
 ```
 
-
-Output exactly:
-Describe your task, or type 'suggest' for task suggestions.
-
-STOP. Wait for response.
-
-- If response is 'suggest':
-  - Call `/obelisk/internal/suggest-task.md`
-  - Output: "Choose a suggestion or describe your task:"
-  - Wait for response
-  - Set task_description = [response]
-
-- Otherwise:
-  - Set task_description = [response]
+- Output: "Describe your task:" 
+- Call `/obelisk/internal/suggest-task.md` (outputs suggestions below) 
+- Wait for response 
+- Set task_description = [response]
 
 
 ---
@@ -238,9 +227,9 @@ Add? [yes/no]
 ## TASK FREEZE
 
 
-### `active-task.md`
+### task.md`
 
-Write to `/obelisk/workspace/active-task.md`:
+Write to `/obelisk/workspace/task.md`:
 
 ``` markdown
 
@@ -264,15 +253,16 @@ Write to `/obelisk/workspace/active-task.md`:
 
 ---
 
-### `contract-changes.md` (conditional)
+### Contract Changes (conditional)
 
-**Only create this file if contract changes were approved during discovery.**
-Write to `/obelisk/workspace/contract-changes.md`:
+**Only create this section if there are contract changes and were approved by user**
+Write below section at the bottom of `task.md` under `## Contract-Changes` section
 
+**Format**:
 
 ``` markdown
 
-# Contract Changes — [Task Name]
+## [TASK_NAME] | YYYY-MM-DD
 
 **Action:** update | create
 **Change:**
@@ -289,9 +279,9 @@ Write to `/obelisk/workspace/contract-changes.md`:
 
 ---
 
-## `discovery-decisions.md`
+## Design Changes
 
-Write to `/obelisk/workspace/discovery-decisions.md`
+Write below section at the bottom of `task.md` under `## Design-Changes` section
 
 **Format**:
 
@@ -322,17 +312,66 @@ Write to `/obelisk/workspace/discovery-decisions.md`
 
 ---
 
+# Implementation Plan
+
+Create `/obelisk/workspace/plan.md`:
+
+```markdown
+# Plan: [Task Name]
+
+## Goal
+[One sentence from task.md]
+
+## Scope Boundaries
+✓ In scope: [clear list]
+✗ Out of scope: [clear list]
+
+---
+
+## Relevant Contracts
+
+List ONLY contracts that directly constrain this task.
+Do not copy full contract text.
+
+- **[Contract Name]** — [Specific constraint relevant to this task]
+- **[Contract Name]** — [Specific constraint]
+
+---
+
+## Relevant Design Constraints
+
+List ONLY design rules that limit implementation choices.
+
+- **[Constraint]** — [How it applies here]
+- **[Constraint]** — [How it applies here]
+
+---
+
+## Execution Strategy
+[3–5 concise sentences describing the approach]
+
+---
+
+## Affected Files
+
+- `/path/file.ext` — [Change summary + contract touch if any]
+- `/path/new-file.ext` — [Purpose + contract touch if any]
+
+(If no contract impact: state “No contract impact”)
+
+```
+
+
+All sections required. Use “None” if applicable.
+
+---
+
+
 ### Display Task & Options
 
 **Obelisk: Task Ready**
 
-| **Task**      | [One-line name from header]                   |
-| ------------- | --------------------------------------------- |
-| **Goal**      | [One sentence]                                |
-| **Scope**     | ✓ [2-3 key inclusions] ✗ [1-2 key exclusions] |
-| **Contracts** | [brief change or "None"]                      |
-
-**Full definition:** `/obelisk/workspace/active-task.md`
+**Full definition:** `/obelisk/workspace/task.md`
 
 ---
 
@@ -342,10 +381,9 @@ Write to `/obelisk/workspace/discovery-decisions.md`
 Output EXACTLY this block. No additions.
 
 ``` markdown
-**Task frozen:** `/obelisk/workspace/active-task.md`
+**Task frozen:** `/obelisk/workspace/task.md`
 
 **Next steps (user-initiated):**
-- Execute: `/run-task`
-- Edit: modify `/obelisk/workspace/active-task.md`, then run `/run-task`
+- Execute: '@run-task'
 ```
 

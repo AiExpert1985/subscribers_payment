@@ -11,8 +11,8 @@ import 'package:path/path.dart';
 /// - payments: Immutable payment records (no FK to accounts)
 class DatabaseService {
   static Database? _database;
-  static const String _databaseName = 'subscribers_payments.db';
-  static const int _databaseVersion = 3;
+  static const String _databaseName = 'subscribers_payments_v2.db';
+  static const int _databaseVersion = 1;
 
   // Table names
   static const String tableSubscriberGroups = 'subscriber_groups';
@@ -38,7 +38,6 @@ class DatabaseService {
       path,
       version: _databaseVersion,
       onCreate: _onCreate,
-      onUpgrade: _onUpgrade,
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },
@@ -78,25 +77,6 @@ class DatabaseService {
         UNIQUE (reference_account_number, payment_date, amount)
       )
     ''');
-  }
-
-  /// Handles database schema upgrades
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {
-      // Migration from v1: add subscriber_name, rename collector_stamp
-      await db.execute(
-        'ALTER TABLE $tablePayments ADD COLUMN subscriber_name TEXT',
-      );
-      await db.execute(
-        'ALTER TABLE $tablePayments RENAME COLUMN collector_stamp TO stamp_number',
-      );
-    }
-    if (oldVersion < 3) {
-      // Migration from v2: add address column
-      await db.execute(
-        'ALTER TABLE $tablePayments ADD COLUMN address TEXT',
-      );
-    }
   }
 
   /// Closes the database connection

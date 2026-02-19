@@ -1,17 +1,6 @@
 ---
 description: Run small mechanical fix without full task flow
 ---
-## Required Files
-
-- `/obelisk/guidelines/ai-engineering.md`
-- `/obelisk/contracts/contracts-summary.md`
-- `/obelisk/history/history-log.md`
-
-If any are missing → **STOP** and report
-
-
----
-
 ## Execution
 
 Perform exactly the mechanical change described.
