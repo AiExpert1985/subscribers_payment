@@ -393,6 +393,6 @@ Output EXACTLY this block. No additions.
 **Task frozen:** `/obelisk/workspace/task.md`
 
 **Next steps (user-initiated):**
-- Execute: '@run-task'
+- Execute: `run-task` (use @run-task or /run-task depending on your IDE)
 ```
 

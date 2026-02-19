@@ -12,7 +12,7 @@ import 'package:path/path.dart';
 class DatabaseService {
   static Database? _database;
   static const String _databaseName = 'subscribers_payments_v2.db';
-  static const int _databaseVersion = 1;
+  static const int _databaseVersion = 2;
 
   // Table names
   static const String tableSubscriberGroups = 'subscriber_groups';
@@ -38,6 +38,7 @@ class DatabaseService {
       path,
       version: _databaseVersion,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },
@@ -76,6 +77,24 @@ class DatabaseService {
         address TEXT,
         UNIQUE (reference_account_number, payment_date, amount)
       )
+    ''');
+
+    await _createSubscriberGroupNameIndex(db);
+  }
+
+  /// Handles database schema upgrades between versions.
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await _createSubscriberGroupNameIndex(db);
+    }
+  }
+
+  /// Creates a partial unique index on subscriber_groups.name for non-empty names.
+  Future<void> _createSubscriberGroupNameIndex(Database db) async {
+    await db.execute('''
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_subscriber_groups_name_nonempty
+      ON $tableSubscriberGroups(name)
+      WHERE name != ''
     ''');
   }
 
@@ -364,11 +383,14 @@ class DatabaseService {
 
   // ─── Import Helpers ──────────────────────────────────────────────
 
-  /// Finds or creates an account and its subscriber group for import.
+  /// Finds or creates an account and its subscriber group.
   ///
   /// If the account number already exists, returns the existing account ID.
-  /// Otherwise, creates a new subscriber group (using subscriberName if
-  /// provided) and a new account linked to it.
+  /// Otherwise, resolves the group as follows:
+  /// - If [subscriberName] is non-empty, searches for an existing group with
+  ///   that exact name and adds the account there.
+  /// - If no matching group is found (or name is empty/null), creates a new
+  ///   subscriber group and adds the account to it.
   Future<int> findOrCreateAccountAndGroup(
     int accountNumber, {
     String? subscriberName,
@@ -377,13 +399,33 @@ class DatabaseService {
     if (existing != null) return existing['id'] as int;
 
     final db = await database;
-    final groupId = await db.insert(tableSubscriberGroups, {
-      'name': subscriberName ?? '',
-    });
+    final groupId = await _resolveOrCreateGroup(db, subscriberName);
 
     return await db.insert(tableAccounts, {
       'account_number': accountNumber,
       'subscriber_group_id': groupId,
+    });
+  }
+
+  /// Returns the ID of an existing group matching [subscriberName] exactly,
+  /// or creates a new group if no match is found (or name is empty/null).
+  Future<int> _resolveOrCreateGroup(
+    Database db,
+    String? subscriberName,
+  ) async {
+    if (subscriberName != null && subscriberName.isNotEmpty) {
+      final matches = await db.query(
+        tableSubscriberGroups,
+        columns: ['id'],
+        where: 'name = ?',
+        whereArgs: [subscriberName],
+        limit: 1,
+      );
+      if (matches.isNotEmpty) return matches.first['id'] as int;
+    }
+
+    return await db.insert(tableSubscriberGroups, {
+      'name': subscriberName ?? '',
     });
   }
 

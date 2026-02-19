@@ -152,6 +152,15 @@ _(none)_
 - Export action lives in the payments feature module
 
 ---
+## 20260219 | Auto-assign new accounts to existing subscriber groups by name match
+
+**Business Logic:**
+- Lookup order for unknown account: (1) exact-match existing group by non-empty subscriber name → assign account there; (2) no match or empty name → create new group as before.
+- Non-empty subscriber group names are unique at DB level (partial unique index on `subscriber_groups.name WHERE name != ''`).
+- DB schema version incremented; migration adds the partial unique index.
+
+---
+
 ## 20260218-1038 | Improve Payments Screen Layout, Interaction, and Data Fields
 
 **Architecture / Design:**

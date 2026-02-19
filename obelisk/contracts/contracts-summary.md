@@ -13,6 +13,19 @@ _(empty — populated after first maintenance)_
 
 ## Unprocessed
 
+### 20260219 | Auto-assign new accounts to existing subscriber groups by name match
+
+**Action:** update
+**Change:**
+- Contract #5 — Replace: "Import Auto-Create: When importing a payment with an unknown `reference_account_number`, the system auto-creates a new subscriber group and account entry."
+  With: "Account Auto-Assign: When a payment is added (via import or manual entry) with an unknown `reference_account_number`, the system first searches for an existing subscriber group whose name exactly matches the payment's subscriber name. If a match is found, the new account is added to that group. If no match is found (or subscriber name is empty), a new subscriber group is created and the account is added to it."
+
+**Action:** create
+**Change:**
+- **Subscriber Group Name Uniqueness**: Non-empty subscriber group names must be unique across all groups. Enforced at the database level. This prevents ambiguous group resolution when auto-assigning new accounts by name.
+
+---
+
 ### 2026-02-17 | Accounts Screen
 
 **Action:** create

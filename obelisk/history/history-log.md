@@ -21,3 +21,7 @@
 ## 20260218-1038 | Improve Payments Screen Layout, Interaction, and Data Fields | APPROVED
 
 ---
+
+## 20260219 | Auto-assign new accounts to existing subscriber groups by name match | APPROVED
+
+---
