@@ -35,7 +35,7 @@ If execution is triggered at any point → **STOP immediately**.
 **IF user provided description:**
 
 ```
-/define-task Add image picker to main screen
+define-task Add image picker to main screen
 ```
 
 - Extract task_description = "Add image picker to main screen"
@@ -44,7 +44,7 @@ If execution is triggered at any point → **STOP immediately**.
 **IF no description:**
 
 ```
-/define-task
+define-task
 ```
 
 Output exactly:
