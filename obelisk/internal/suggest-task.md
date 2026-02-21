@@ -20,7 +20,7 @@ description: Suggest next tasks
 
 ### Secondary Source (Optional)
 
-#### From /obelisk/project/project-initial-description.md:
+**From `/obelisk/project/project-initial-description.md`:**
 Load only after reading primary sources.
 Use only to surface open ideas not yet formalized into tasks.
 If content conflicts with contracts or design → ignore.

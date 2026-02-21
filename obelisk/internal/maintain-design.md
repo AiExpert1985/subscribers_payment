@@ -3,9 +3,9 @@ description: Compact design log and regenerate summary
 ---
 ## Required Files
 
-- `/design/design-log.md`
-- `/design/design-summary.md`
-- `/contracts/contracts-log.md`
+- `/obelisk/design/design-log.md`
+- `/obelisk/design/design-summary.md`
+- `/obelisk/contracts/contracts-log.md`
 
 Missing → STOP
 
@@ -22,8 +22,8 @@ Missing → STOP
 
 ### Inputs (Read-Only)
 
-- `/design/design-log.md` (authoritative design history)
-- `/contracts/contracts-log.md` (constraints context)
+- `/obelisk/design/design-log.md` (authoritative design history)
+- `/obelisk/contracts/contracts-log.md` (constraints context)
 
 Authority:
 - `design-log.md` defines declared design.
@@ -65,7 +65,7 @@ If design contradicts a contract:
 
 ## Write Summary
 
-Overwrite `/design/design-summary.md`:
+Overwrite `/obelisk/design/design-summary.md`:
 
 ```markdown
 # Design Summary

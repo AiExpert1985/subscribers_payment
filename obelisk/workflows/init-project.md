@@ -3,7 +3,7 @@ description: Initialize new Obelisk project
 ---
 ## Required Files
 
-- `/guidelines/ai-engineering.md`
+- `/obelisk/guidelines/ai-engineering.md`
 
 ---
 
@@ -13,11 +13,11 @@ The following MUST NOT exist:
 
 **State files:**
 
-- `/contracts/contracts-summary.md`
-- `/contracts/contracts-log.md`
-- `/design/design-summary.md`
-- `/design/design-log.md`
-- `/history/history-log.md`
+- `/obelisk/contracts/contracts-summary.md`
+- `/obelisk/contracts/contracts-log.md`
+- `/obelisk/design/design-summary.md`
+- `/obelisk/design/design-log.md`
+- `/obelisk/history/history-log.md`
 
 If any exist → **STOP**.
 
@@ -83,12 +83,12 @@ If violated, business correctness or historical data integrity breaks.
 
 Output exactly:
 
-```
+
 PHASE 1: DISCOVERY
 
 Describe your system to help initialize contracts.
 Type `skip` to use minimal defaults (not recommended).
-```
+
 
 **STOP. Wait for user response.**
 
@@ -196,9 +196,9 @@ If discovery was skipped:
 
 Create the following files and leave them completely empty:
 
-- `/contracts/contracts-log.md`
-- `/design/design-log.md`
-- `/history/history-log.md`
+- `/obelisk/contracts/contracts-log.md`
+- `/obelisk/design/design-log.md`
+- `/obelisk/history/history-log.md`
 
 Rules:
 
@@ -217,7 +217,7 @@ Keep structured sections empty with placeholder text.
 
 ---
 
-### **`/contracts/contracts-summary.md`:**
+### **`/obelisk/contracts/contracts-summary.md`:**
 
 ``` markdown
 # Contracts Summary
@@ -249,7 +249,7 @@ _(empty — populated after first maintenance)_
 
 ---
 
-### **`/design/design-summary.md`:**
+### **`/obelisk/design/design-summary.md`:**
 
 ``` markdown
 

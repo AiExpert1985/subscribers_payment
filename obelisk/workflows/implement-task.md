@@ -3,9 +3,9 @@ description: Auto-execute task until the end
 ---
 ## Required Files
 
-- `/workspace/task.md`
-- `/workspace/plan.md`
-- `/guidelines/ai-engineering.md`
+- `/obelisk/workspace/task.md`
+- `/obelisk/workspace/plan.md`
+- `/obelisk/guidelines/ai-engineering.md`
 
 If any are missing → STOP and report path.
 
@@ -62,7 +62,7 @@ Log any such divergence.
 
 ### Implementation Notes
 
-Create `/workspace/implementation-notes.md`:
+Create `/obelisk/workspace/implementation-notes.md`:
 
 ```markdown
 # Implementation Notes: [Task Name]
@@ -86,7 +86,7 @@ Create `/workspace/implementation-notes.md`:
 For every ✔, provide evidence: file path + function/class, code snippet, 
 or precise observed logic. Vague statements are not evidence.
 
- **Write to `/workspace/review-notes.md`:**
+ **Write to `/obelisk/workspace/review-notes.md`:**
 
 ```
 # Review: [Task Name]
@@ -109,7 +109,7 @@ or precise observed logic. Vague statements are not evidence.
 
 **If REJECTED**
 
-1. Append to `/history/history-log.md`:
+1. Append to `/obelisk/history/history-log.md`:
 
 ``` markdown
 ## YYYYMMDD-HHMM | [Task Name] | REJECTED
@@ -119,15 +119,15 @@ or precise observed logic. Vague statements are not evidence.
 ```
 
 2. Archive workspace to  
-   `/archive/rejected/YYYYMMDD-HHMM-[task-name]/`
+   `/obelisk/archive/rejected/YYYYMMDD-HHMM-[task-name]/`
    
-3. Clear `/workspace/`
+3. Clear `/obelisk/workspace/`
 
 **Output:**
 
 ``` markdown
 ⚠️ TASK CLOSED — REJECTED
-Archived: /archive/rejected/YYYYMMDD-HHMM-[task-name]/
+Archived: /obelisk/archive/rejected/YYYYMMDD-HHMM-[task-name]/
 
 ```
 
@@ -139,7 +139,7 @@ STOP.
 
 #### **1 — Write History**
 
-Append to `/history/history-log.md`:
+Append to `/obelisk/history/history-log.md`:
 
 ``` markdown
 ## YYYYMMDD-HHMM | [Task Name] | APPROVED
@@ -155,7 +155,7 @@ Append to `/history/history-log.md`:
 If `task.md` has `## Contract-Changes` section:
 
 Append its content exactly as written to  
-`/contracts/contracts-summary.md → ## Unprocessed`
+`/obelisk/contracts/contracts-summary.md → ## Unprocessed`
 
 **Format:**
 
@@ -173,7 +173,7 @@ Append its content exactly as written to
 - Preserve exact contract text
 
 **If contracts-summary `## Unprocessed` contains ≥ 10 entries 
-→ Run `/internal/maintain-contracts.md`**
+→ Run `/obelisk/internal/maintain-contracts.md`**
 
 ---
 
@@ -183,7 +183,7 @@ If `task.md` has `## Design-Changes` section:
 
 Append its content (excluding Summary and Deferred) to:
 
-`/design/design-summary.md` → `## Unprocessed`
+`/obelisk/design/design-summary.md` → `## Unprocessed`
 
 **Format:**
 
@@ -197,16 +197,16 @@ Append its content (excluding Summary and Deferred) to:
 
 
 **If design-summary `## Unprocessed` contains ≥ 10 entries 
-→ Run `/internal/maintain-desgin.md`** 
+→ Run `/obelisk/internal/maintain-desgin.md`** 
 
 ---
 
 #### **4 — Archive Workspace**
 
 Archive all files to:
-`/archive/completed/YYYYMMDD-HHMM-[task-name]/`
+`/obelisk/archive/completed/YYYYMMDD-HHMM-[task-name]/`
 
-Clear `/workspace/`
+Clear `/obelisk/workspace/`
 
 ---
 
@@ -214,7 +214,7 @@ Clear `/workspace/`
 
 ```
 ✅ TASK CLOSED — APPROVED
-Archived: /archive/completed/YYYYMMDD-HHMM-task-name/
+Archived: /obelisk/archive/completed/YYYYMMDD-HHMM-task-name/
 ```
 
 

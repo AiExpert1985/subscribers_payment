@@ -3,13 +3,13 @@ description: Creates a new Obelisk task
 ---
 ## Required Files
 
-- `/contracts/contracts-summary.md`
-- `/design/design-summary.md`
-- `/guidelines/ai-engineering.md`
+- `/obelisk/contracts/contracts-summary.md`
+- `/obelisk/design/design-summary.md`
+- `/obelisk/guidelines/ai-engineering.md`
 
 **If any file is missing:**
 - STOP and report missing file
-- OUTPUT: Use `/init-project` to initialize the project.
+- OUTPUT: Use `@init-project` to initialize the project.
 
 
 ---
@@ -234,12 +234,12 @@ Add? [yes/no]
 
 ### Clean Workspace
 
-Delete all files in `/workspace/` before proceeding.
+Delete all files in `/obelisk/workspace/` before proceeding.
 
 ---
 ### task.md`
 
-Write to `/workspace/task.md`:
+Write to `/obelisk/workspace/task.md`:
 
 ``` markdown
 
@@ -324,7 +324,7 @@ Write below section at the bottom of `task.md` under `## Design-Changes` section
 
 # Implementation Plan
 
-Create `/workspace/plan.md`:
+Create `/obelisk/workspace/plan.md`:
 
 ```markdown
 # Plan: [Task Name]
@@ -383,7 +383,7 @@ Output EXACTLY this block. No additions.
 
 **Obelisk: Task Ready**
 
-**Task frozen:** `/workspace/task.md`
+**Task frozen:** `/obelisk/workspace/task.md`
 
 Review `task.md` and `plan.md`.  
 If you have corrections, describe them now.  

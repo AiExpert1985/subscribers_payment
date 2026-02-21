@@ -3,9 +3,9 @@ description: Compact log and regenerate contracts summary
 ---
 ## Required Files
 
-- `/contracts/contracts-log.md`
-- `/contracts/contracts-summary.md`
-- `/design/design-log.md`
+- `/obelisk/contracts/contracts-log.md`
+- `/obelisk/contracts/contracts-summary.md`
+- `/obelisk/design/design-log.md`
 
 Missing → STOP.
 
@@ -22,8 +22,8 @@ Missing → STOP.
 
 ### Inputs (Read-Only)
 
-- `/contracts/contracts-log.md` (authoritative)
-- `/design/design-log.md` (evolution context)
+- `/obelisk/contracts/contracts-log.md` (authoritative)
+- `/obelisk/design/design-log.md` (evolution context)
 - Codebase (enforcement context only)
 
 Contracts-log defines declared intent.  
@@ -69,7 +69,7 @@ Do NOT remove contracts due to missing enforcement.
 
 ## Write Summary
 
-Overwrite `/contracts/contracts-summary.md`:
+Overwrite `/obelisk/contracts/contracts-summary.md`:
 
 ```markdown
 # Contracts Summary
