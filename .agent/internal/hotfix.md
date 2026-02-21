@@ -20,7 +20,7 @@ Then:
 ## Write History
 
 Append the following block as the last entry within the section `## Unprocessed`
-in `/obelisk/history/history-log.md`:
+in `/history/history-log.md`:
 
 ``` markdown
 ## YYYYMMDD-HHMM | [Hotfix Name] | HOTFIX

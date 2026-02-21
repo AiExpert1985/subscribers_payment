@@ -3,7 +3,7 @@ description: Initialize new Obelisk project
 ---
 ## Required Files
 
-- `/obelisk/guidelines/ai-engineering.md`
+- `/guidelines/ai-engineering.md`
 
 ---
 
@@ -13,11 +13,11 @@ The following MUST NOT exist:
 
 **State files:**
 
-- `/obelisk/contracts/contracts-summary.md`
-- `/obelisk/contracts/contracts-log.md`
-- `/obelisk/design/design-summary.md`
-- `/obelisk/design/design-log.md`
-- `/obelisk/history/history-log.md`
+- `/contracts/contracts-summary.md`
+- `/contracts/contracts-log.md`
+- `/design/design-summary.md`
+- `/design/design-log.md`
+- `/history/history-log.md`
 
 If any exist → **STOP**.
 
@@ -196,9 +196,9 @@ If discovery was skipped:
 
 Create the following files and leave them completely empty:
 
-- `/obelisk/contracts/contracts-log.md`
-- `/obelisk/design/design-log.md`
-- `/obelisk/history/history-log.md`
+- `/contracts/contracts-log.md`
+- `/design/design-log.md`
+- `/history/history-log.md`
 
 Rules:
 
@@ -217,7 +217,7 @@ Keep structured sections empty with placeholder text.
 
 ---
 
-### **`/obelisk/contracts/contracts-summary.md`:**
+### **`/contracts/contracts-summary.md`:**
 
 ``` markdown
 # Contracts Summary
@@ -249,7 +249,7 @@ _(empty — populated after first maintenance)_
 
 ---
 
-### **`/obelisk/design/design-summary.md`:**
+### **`/design/design-summary.md`:**
 
 ``` markdown
 
@@ -288,6 +288,48 @@ _(empty — populated after maintenance)_
 - Open design questions
 
 ---
+
+### 4. Create Project Init Snapshot
+
+Write `/obelisk/project/project-initial-description.md`:
+
+```
+# Project Init Snapshot
+
+> This file is a frozen snapshot of the initial project discussion.
+> It is never updated, maintained, or treated as authoritative.
+> Sections marked (Initial) may be outdated after early tasks.
+
+Generated: YYYY-MM-DD
+
+## Vision
+[What and why]
+
+## Users
+[Who and how]
+
+## Screens & Flows (Initial)
+[Initial screen/flow descriptions]
+
+## Core Functionality (Initial)
+[Initial feature descriptions]
+
+## UX & Design Philosophy
+[Interaction and design principles]
+
+## UI & Screen Notes (Initial)
+[Layout, style, component notes]
+
+## Open Ideas
+[Unformalized directions — append only]
+
+## Notes
+[Anything else discussed during init]
+```
+
+
+---
+
 
 ## Output
 

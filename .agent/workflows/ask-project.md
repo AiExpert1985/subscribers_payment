@@ -10,17 +10,17 @@ You MUST NOT modify files or trigger workflows.
 ## Information Sources
 
 ### 1. Start with Summaries (default)
-- `/obelisk/contracts/contracts-summary.md`
-- `/obelisk/design/design-summary.md`
+- `/contracts/contracts-summary.md`
+- `/design/design-summary.md`
 
 Use for most questions about current state.
 
 ---
 
 ### 2. Read Logs When Needed
-- `/obelisk/contracts/contracts-log.md`
-- `/obelisk/design/design-log.md`
-- `/obelisk/history/history-log.md`
+- `/contracts/contracts-log.md`
+- `/design/design-log.md`
+- `/history/history-log.md`
 
 Use when:
 - Question asks about evolution or rationale

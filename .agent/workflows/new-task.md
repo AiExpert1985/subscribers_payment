@@ -3,9 +3,9 @@ description: Creates a new Obelisk task
 ---
 ## Required Files
 
-- `/obelisk/contracts/contracts-summary.md`
-- `/obelisk/design/design-summary.md`
-- `/obelisk/guidelines/ai-engineering.md`
+- `/contracts/contracts-summary.md`
+- `/design/design-summary.md`
+- `/guidelines/ai-engineering.md`
 
 **If any file is missing:**
 - STOP and report missing file
@@ -49,7 +49,7 @@ Describe your task, or type 'suggest' for task suggestions.
 STOP. Wait for response.
 
 - If response is 'suggest':
-  - Call `/obelisk/internal/suggest-task.md`
+  - Call `/internal/suggest-task.md`
   - Output: "Choose a suggestion or describe your task:"
   - Wait for response
   - Set task_description = [response]
@@ -80,7 +80,7 @@ Before starting discovery, assess whether the task qualifies as a hotfix.
 **If criteria met:**
 - Output: "Detected simple fix. Running hotfix path."
 - Hotfix is a special execution path and is allowed to execute immediately from this workflow.
-- Call `obelisk/internal/hotfix.md` with task_description
+- Call `/internal/hotfix.md` with task_description
 - STOP
 
 
@@ -234,12 +234,12 @@ Add? [yes/no]
 
 ### Clean Workspace
 
-Delete all files in `/obelisk/workspace/` before proceeding.
+Delete all files in `/workspace/` before proceeding.
 
 ---
 ### task.md`
 
-Write to `/obelisk/workspace/task.md`:
+Write to `/workspace/task.md`:
 
 ``` markdown
 
@@ -324,7 +324,7 @@ Write below section at the bottom of `task.md` under `## Design-Changes` section
 
 # Implementation Plan
 
-Create `/obelisk/workspace/plan.md`:
+Create `/workspace/plan.md`:
 
 ```markdown
 # Plan: [Task Name]
@@ -383,7 +383,7 @@ Output EXACTLY this block. No additions.
 
 **Obelisk: Task Ready**
 
-**Task frozen:** `/obelisk/workspace/task.md`
+**Task frozen:** `/workspace/task.md`
 
 Review `task.md` and `plan.md`.  
 If you have corrections, describe them now.  
