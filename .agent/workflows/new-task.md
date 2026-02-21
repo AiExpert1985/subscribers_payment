@@ -14,16 +14,12 @@ description: Creates a new Obelisk task
 
 ---
 
-### Clean Workspace
 
-Delete all files in `/obelisk/workspace/` before proceeding.
-
----
 ## EXECUTION GUARD (CRITICAL)
 
 Task Discovery defines intent.
 
-You MUST NOT plan, implement, or modify code during this phase.  
+You MUST NOT implement, or modify code during this phase.  
 If execution is triggered at any point → **STOP immediately**.
 
 ---
@@ -35,7 +31,7 @@ If execution is triggered at any point → **STOP immediately**.
 **IF user provided description:**
 
 ```
-define-task Add image picker to main screen
+/new-task Add image picker to main screen
 ```
 
 - Extract task_description = "Add image picker to main screen"
@@ -44,7 +40,7 @@ define-task Add image picker to main screen
 **IF no description:**
 
 ```
-define-task
+/new-task
 ```
 
 Output exactly:
@@ -159,7 +155,7 @@ If one option is clearly wrong, state the correct choice positively.
 
 ---
 
-### Set 1: Understanding (MANDATORY)
+### Clarification Questions (MANDATORY)
 
 Always ask at least one clarification question.
 
@@ -168,19 +164,19 @@ Always ask at least one clarification question.
 - Scope boundaries (what's in/out)
 - Key constraints or dependencies (including required or preferred external libraries, if any)
 
-**After Set 1:**
-> "Understanding complete."
+**After Clarification Questions:**
+> "Answers helps model fully understand current task."
 
 → If no clarification gaps remain AND no contract require user input:
    - State: "No further questions are needed."
    - Proceed to Task Freeze
 
-→ Otherwise: Continue to Set 2
+→ Otherwise: Continue to Refinement Questions
 
 
 ---
 
-### Set 2: Refinement (If Needed)
+### Refinement Questions (If Needed)
 
 Resolve remaining issues in organized groups. Each group may be skipped if no issues were detected.
 
@@ -236,6 +232,11 @@ Add? [yes/no]
 ## TASK FREEZE
 
 
+### Clean Workspace
+
+Delete all files in `/obelisk/workspace/` before proceeding.
+
+---
 ### task.md`
 
 Write to `/obelisk/workspace/task.md`:
@@ -375,24 +376,39 @@ All sections required. Use “None” if applicable.
 
 ---
 
-
-### Display Task & Options
-
-**Obelisk: Task Ready**
-
-**Full definition:** `/obelisk/workspace/task.md`
-
----
-
-
-## TERMINAL STATE
+## OUTPUT
 
 Output EXACTLY this block. No additions.
 
-``` markdown
+
+**Obelisk: Task Ready**
+
 **Task frozen:** `/obelisk/workspace/task.md`
 
-**Next steps (user-initiated):**
-- Execute: `run-task` (use @run-task or /run-task depending on your IDE)
-```
+Review `task.md` and `plan.md`.  
+If you have corrections, describe them now.  
+Otherwise:
 
+to implement the task, call the `implement-task` prompt
+
+
+---
+
+## Post-Freeze Corrections
+
+If the user provides corrections:
+
+1. Classify the correction first:
+   - **Mechanical** — wording or clarification only, no change to scope, intent, constraints, or contract impact
+   - **Substantive** — changes scope, goal, constraints, or contract interactions
+
+2. If Mechanical:
+   - Update `task.md` and/or `plan.md`
+   - Output: `Task updated.`
+   - Repeat TERMINAL STATE
+
+3. If Substantive:
+   - Output: `Correction changes scope or constraints. Restarting discovery.`
+   - Restart from ## Refinement Questions using existing task description and previous questions & answers as context
+
+If no corrections → TERMINAL STATE

@@ -79,68 +79,31 @@ Create `/obelisk/workspace/implementation-notes.md`:
 ```
 
 
-**OUTPUT:**
-
-> ✓ IMPLEMENTATION COMPLETE — implementation-notes.md created
-
-
 ---
 
 ## Review Phase
 
-### Required Validation
+For every ✔, provide evidence: file path + function/class, code snippet, 
+or precise observed logic. Vague statements are not evidence.
 
-You MUST:
+ **Write to `/obelisk/workspace/review-notes.md`:**
 
-1. Inspect actual source code for files listed in plan.md.
-2. Confirm Task Goal is fully achieved.
-3. Confirm no contract is violated or weakened.
-4. Confirm scope was not expanded.
-5. Confirm no reinterpretation, scope expansion, or speculative changes.
-
-If any fail → Status = REJECTED.
-
----
-
-### Anti-Hallucination Rule (Mandatory)
-
-For every ✓ involving code validation, provide evidence:
-
-- File path + function/class  
-OR  
-- Short code snippet  
-OR  
-- Precise observed logic  
-
-If evidence cannot be shown → mark ✗.
-
----
-
-### Review Output
-
-Write to `/obelisk/workspace/review-notes.md`:
-
-```markdown
-# Review Outcome
+```
+# Review: [Task Name]
 
 **Status:** APPROVED | REJECTED
 
-## Summary
-[2–3 factual sentences]
+1. Goal Achieved: ✔ | ✗ — [evidence]
+2. Contracts Preserved: ✔ | ✗ — [evidence]
+3. Scope Preserved: ✔ | ✗ — [evidence]
 
-## Validation Results
-1. Goal Achieved: ✓ | ✗
-2. Contracts Preserved: ✓ | ✗
-3. Scope Preserved: ✓ | ✗
-4. Intent Preserved: ✓ | ✗
-5. No Hallucinated Changes: ✓ | ✗
+**Files Verified:** [list]
 
-## Files Verified
-- [actual source files reviewed]
-
-## Notes
-- Factual observations only
+**Notes:** [optional — mechanical divergences or observations only]
 ```
+
+---
+
 
 ### Status Gate
 
