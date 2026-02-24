@@ -25,3 +25,15 @@
 ## 20260219 | Auto-assign new accounts to existing subscriber groups by name match | APPROVED
 
 ---
+
+## 20260224-1335 | Filter Excel Import by Account Number Starting with 10 | APPROVED
+
+**Intent:** Filter out irrelevant payment rows during Excel import based on account number prefix.
+**Key Decisions:** 
+- Filter condition: Account number starts with "10".
+- Pre-processing: Trim spaces from account number before checking.
+- UX Impact: Skipped rows are handled silently without notifying the user.
+**Rejected / Deferred:** 
+- Summarizing skipped rows to the user (rejected to keep UI simple).
+
+---

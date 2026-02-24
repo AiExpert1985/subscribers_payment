@@ -26,6 +26,14 @@ _(empty — populated after first maintenance)_
 
 ---
 
+## 20260224-1335 | Filter Excel Import by Account Number Starting with 10
+
+**Action:** update
+**Change:**
+- Contract #5 — Update: "Import Auto-Create: When importing a payment, **only rows with an account number starting with '10' are processed.** For these rows, if the `reference_account_number` is unknown, the system auto-creates a new subscriber group and account entry. Rows with account numbers not starting with '10' are silently ignored."
+
+---
+
 ### 2026-02-17 | Accounts Screen
 
 **Action:** create

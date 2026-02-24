@@ -162,6 +162,12 @@ class ExcelParser {
       return null;
     }
 
+    // Step 1: Filter by account number prefix before full parsing
+    final accountText = accountValue.toString().trim();
+    if (!accountText.startsWith('10')) {
+      return null;
+    }
+
     final accountNumber = _parseAccountNumber(accountValue);
     final amount = _parseAmount(amountValue);
     final paymentDate = _parseDate(dateValue, row, mapping.dateIndex);

@@ -19,6 +19,13 @@ _(empty — populated after maintenance)_
 
 ## Unprocessed
 
+### 20260224-1335 | Filter Excel Import by Account Number Starting with 10
+
+**Architecture / Design:**
+- Excel import filtering rule: Account numbers must start with '10' (after trimming spaces) to be imported; others are silently skipped.
+
+---
+
 ### 2026-02-17 | Accounts Screen
 
 **Architecture / Design:**
