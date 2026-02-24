@@ -83,12 +83,12 @@ If violated, business correctness or historical data integrity breaks.
 
 Output exactly:
 
-```
+
 PHASE 1: DISCOVERY
 
 Describe your system to help initialize contracts.
 Type `skip` to use minimal defaults (not recommended).
-```
+
 
 **STOP. Wait for user response.**
 
@@ -288,6 +288,48 @@ _(empty — populated after maintenance)_
 - Open design questions
 
 ---
+
+### 4. Create Project Init Snapshot
+
+Write `/obelisk/project/project-initial-description.md`:
+
+```
+# Project Init Snapshot
+
+> This file is a frozen snapshot of the initial project discussion.
+> It is never updated, maintained, or treated as authoritative.
+> Sections marked (Initial) may be outdated after early tasks.
+
+Generated: YYYY-MM-DD
+
+## Vision
+[What and why]
+
+## Users
+[Who and how]
+
+## Screens & Flows (Initial)
+[Initial screen/flow descriptions]
+
+## Core Functionality (Initial)
+[Initial feature descriptions]
+
+## UX & Design Philosophy
+[Interaction and design principles]
+
+## UI & Screen Notes (Initial)
+[Layout, style, component notes]
+
+## Open Ideas
+[Unformalized directions — append only]
+
+## Notes
+[Anything else discussed during init]
+```
+
+
+---
+
 
 ## Output
 
