@@ -26,6 +26,14 @@
 
 ---
 
+## 20260225-0000 | Log entire file import failures to the console | APPROVED
+
+**Intent:** To improve developer visibility into why an Excel file import fails entirely by outputting a concise failure reason to the debug console.
+**Key Decisions:** Log only file-level failures. Use `debugPrint`. Output only necessary information.
+**Rejected / Deferred:** Row-level logging was rejected by the user.
+
+---
+
 ## 20260224-1335 | Filter Excel Import by Account Number Starting with 10 | APPROVED
 
 **Intent:** Filter out irrelevant payment rows during Excel import based on account number prefix.

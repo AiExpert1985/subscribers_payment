@@ -19,6 +19,12 @@ _(empty — populated after maintenance)_
 
 ## Unprocessed
 
+### 20260225-0000 | Log entire file import failures to the console
+
+- Use `debugPrint` for debugging import failures without persisting to a file or UI.
+
+---
+
 ### 20260224-1335 | Filter Excel Import by Account Number Starting with 10
 
 **Architecture / Design:**

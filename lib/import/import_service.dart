@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../data/database_service.dart';
 import 'excel_parser.dart';
 
@@ -42,6 +43,7 @@ class ImportService {
       if (!parseResult.isSuccessful) {
         failedFiles++;
         errors.add('${parseResult.fileName}: ${parseResult.errors.join(", ")}');
+        debugPrint('ImportService: فشل استيراد الملف "${parseResult.fileName}": ${parseResult.errors.join(", ")}');
         continue;
       }
 

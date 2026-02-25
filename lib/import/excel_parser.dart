@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:excel/excel.dart';
+import 'package:flutter/foundation.dart';
 import 'column_aliases.dart';
 
 /// Result of parsing a single Excel file.
@@ -53,6 +54,7 @@ class ExcelParser {
       final excel = Excel.decodeBytes(bytes);
       return _parseExcel(excel, fileName);
     } catch (e) {
+      debugPrint('ExcelParser: فشل استيراد الملف "$fileName": $e');
       return ExcelParseResult(
         fileName: fileName,
         rows: [],
