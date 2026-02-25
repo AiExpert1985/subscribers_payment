@@ -43,7 +43,9 @@ class ImportService {
       if (!parseResult.isSuccessful) {
         failedFiles++;
         errors.add('${parseResult.fileName}: ${parseResult.errors.join(", ")}');
-        debugPrint('ImportService: فشل استيراد الملف "${parseResult.fileName}": ${parseResult.errors.join(", ")}');
+        debugPrint(
+          'ImportService: import failed "${parseResult.fileName}": ${parseResult.errors.join(", ")}',
+        );
         continue;
       }
 
