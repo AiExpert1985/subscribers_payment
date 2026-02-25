@@ -228,7 +228,8 @@ class DatabaseService {
 
   /// Inserts payments in batch, skipping duplicates via INSERT OR IGNORE.
   /// Returns the number of successfully inserted rows.
-  /// Reports progress via [onProgress] after each 500-row chunk.
+  /// All inserts run inside a single transaction (one disk flush).
+  /// Reports progress via [onProgress] every 10,000 rows.
   Future<int> insertPaymentBatch(
     List<Map<String, dynamic>> payments, {
     void Function(int done, int total)? onProgress,
@@ -241,21 +242,27 @@ class DatabaseService {
     );
     final before = beforeResult.first['c'] as int;
 
-    const chunkSize = 500;
-    for (int i = 0; i < payments.length; i += chunkSize) {
-      final end = (i + chunkSize).clamp(0, payments.length);
-      final chunk = payments.sublist(i, end);
-      final batch = db.batch();
-      for (final payment in chunk) {
-        batch.insert(
-          tablePayments,
-          payment,
-          conflictAlgorithm: ConflictAlgorithm.ignore,
-        );
+    const chunkSize = 5000;
+    await db.transaction((txn) async {
+      for (int i = 0; i < payments.length; i += chunkSize) {
+        final end = i + chunkSize < payments.length
+            ? i + chunkSize
+            : payments.length;
+        final chunk = payments.sublist(i, end);
+        final batch = txn.batch();
+        for (final payment in chunk) {
+          batch.insert(
+            tablePayments,
+            payment,
+            conflictAlgorithm: ConflictAlgorithm.ignore,
+          );
+        }
+        await batch.commit(noResult: true);
+        if (end % 10000 == 0 || end == payments.length) {
+          onProgress?.call(end, payments.length);
+        }
       }
-      await batch.commit(noResult: true);
-      onProgress?.call(end, payments.length);
-    }
+    });
 
     final afterResult = await db.rawQuery(
       'SELECT COUNT(*) as c FROM $tablePayments',
