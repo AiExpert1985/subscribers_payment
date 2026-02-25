@@ -226,48 +226,29 @@ class DatabaseService {
     return await db.insert(tablePayments, payment);
   }
 
-  /// Inserts payments in batch, skipping duplicates via INSERT OR IGNORE.
+  /// Inserts payments in a single batch commit, skipping duplicates via INSERT OR IGNORE.
   /// Returns the number of successfully inserted rows.
-  /// All inserts run inside a single transaction (one disk flush).
-  /// Reports progress via [onProgress] every 10,000 rows.
-  Future<int> insertPaymentBatch(
-    List<Map<String, dynamic>> payments, {
-    void Function(int done, int total)? onProgress,
-  }) async {
+  Future<int> insertPaymentBatch(List<Map<String, dynamic>> payments) async {
     if (payments.isEmpty) return 0;
     final db = await database;
 
-    final beforeResult = await db.rawQuery(
-      'SELECT COUNT(*) as c FROM $tablePayments',
-    );
-    final before = beforeResult.first['c'] as int;
+    final before =
+        (await db.rawQuery('SELECT COUNT(*) as c FROM $tablePayments'))
+            .first['c'] as int;
 
-    const chunkSize = 5000;
-    await db.transaction((txn) async {
-      for (int i = 0; i < payments.length; i += chunkSize) {
-        final end = i + chunkSize < payments.length
-            ? i + chunkSize
-            : payments.length;
-        final chunk = payments.sublist(i, end);
-        final batch = txn.batch();
-        for (final payment in chunk) {
-          batch.insert(
-            tablePayments,
-            payment,
-            conflictAlgorithm: ConflictAlgorithm.ignore,
-          );
-        }
-        await batch.commit(noResult: true);
-        if (end % 10000 == 0 || end == payments.length) {
-          onProgress?.call(end, payments.length);
-        }
-      }
-    });
+    final batch = db.batch();
+    for (final payment in payments) {
+      batch.insert(
+        tablePayments,
+        payment,
+        conflictAlgorithm: ConflictAlgorithm.ignore,
+      );
+    }
+    await batch.commit(noResult: true);
 
-    final afterResult = await db.rawQuery(
-      'SELECT COUNT(*) as c FROM $tablePayments',
-    );
-    final after = afterResult.first['c'] as int;
+    final after =
+        (await db.rawQuery('SELECT COUNT(*) as c FROM $tablePayments'))
+            .first['c'] as int;
     return after - before;
   }
 

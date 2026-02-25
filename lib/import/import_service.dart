@@ -79,12 +79,9 @@ class ImportService {
         }
       }
 
-      // Batch insert with duplicate skipping and progress reporting
-      final inserted = await _db.insertPaymentBatch(
-        parseResult.rows,
-        onProgress: (done, total) =>
-            onProgress?.call('جاري الحفظ... $done / $total'),
-      );
+      // Notify user that parsing is done and saving is starting
+      onProgress?.call('تم قراءة ${parseResult.rows.length} سجل — جاري الحفظ...');
+      final inserted = await _db.insertPaymentBatch(parseResult.rows);
       final duplicates = parseResult.rows.length - inserted;
 
       totalInserted += inserted;
