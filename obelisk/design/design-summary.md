@@ -196,3 +196,10 @@ _(none)_
 - Payment filter fields use uniform visual height through consistent padding/density settings.
 
 ---
+
+## 20260225-1200 | Optimize Excel Import Performance for Large Files
+
+**Date:** 2026-02-25
+- Import pipeline runs Excel parsing in a background isolate; DB inserts use sqflite Batch in 500-row chunks with optional progress callback.
+
+---

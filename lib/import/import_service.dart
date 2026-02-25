@@ -2,6 +2,10 @@ import 'package:flutter/foundation.dart';
 import '../data/database_service.dart';
 import 'excel_parser.dart';
 
+// Top-level function required by compute() — closures are not allowed because
+// they would capture non-sendable Flutter state through shared Dart contexts.
+ExcelParseResult _parseFile(String path) => ExcelParser().parseFile(path);
+
 /// Result of importing one or more Excel files.
 class ImportResult {
   final int successfulFiles;
@@ -25,12 +29,15 @@ class ImportResult {
 /// (INSERT OR IGNORE).
 class ImportService {
   final DatabaseService _db;
-  final ExcelParser _parser = ExcelParser();
 
   ImportService(this._db);
 
   /// Imports payments from multiple Excel file paths.
-  Future<ImportResult> importFiles(List<String> filePaths) async {
+  /// Reports progress via [onProgress] with a human-readable Arabic label.
+  Future<ImportResult> importFiles(
+    List<String> filePaths, {
+    void Function(String label)? onProgress,
+  }) async {
     int successfulFiles = 0;
     int failedFiles = 0;
     int totalInserted = 0;
@@ -38,7 +45,8 @@ class ImportService {
     final errors = <String>[];
 
     for (final path in filePaths) {
-      final parseResult = _parser.parseFile(path);
+      onProgress?.call('جاري قراءة الملف...');
+      final parseResult = await compute(_parseFile, path);
 
       if (!parseResult.isSuccessful) {
         failedFiles++;
@@ -49,20 +57,34 @@ class ImportService {
         continue;
       }
 
-      // Auto-create accounts/groups for unknown account numbers
+      // Collect unique account numbers and their subscriber names
+      onProgress?.call('جاري معالجة الحسابات...');
       final accountNumbers = <int>{};
+      final accountNames = <int, String?>{};
       for (final row in parseResult.rows) {
         final accNum = row['reference_account_number'] as int;
         if (accountNumbers.add(accNum)) {
+          accountNames[accNum] = row['subscriber_name'] as String?;
+        }
+      }
+
+      // Load all existing accounts in one query, then create only missing ones
+      final existing = await _db.getExistingAccountNumbers(accountNumbers);
+      for (final accNum in accountNumbers) {
+        if (!existing.contains(accNum)) {
           await _db.findOrCreateAccountAndGroup(
             accNum,
-            subscriberName: row['subscriber_name'] as String?,
+            subscriberName: accountNames[accNum],
           );
         }
       }
 
-      // Batch insert with duplicate skipping
-      final inserted = await _db.insertPaymentBatch(parseResult.rows);
+      // Batch insert with duplicate skipping and progress reporting
+      final inserted = await _db.insertPaymentBatch(
+        parseResult.rows,
+        onProgress: (done, total) =>
+            onProgress?.call('جاري الحفظ... $done / $total'),
+      );
       final duplicates = parseResult.rows.length - inserted;
 
       totalInserted += inserted;

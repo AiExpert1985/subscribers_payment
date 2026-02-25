@@ -228,22 +228,40 @@ class DatabaseService {
 
   /// Inserts payments in batch, skipping duplicates via INSERT OR IGNORE.
   /// Returns the number of successfully inserted rows.
-  Future<int> insertPaymentBatch(List<Map<String, dynamic>> payments) async {
+  /// Reports progress via [onProgress] after each 500-row chunk.
+  Future<int> insertPaymentBatch(
+    List<Map<String, dynamic>> payments, {
+    void Function(int done, int total)? onProgress,
+  }) async {
+    if (payments.isEmpty) return 0;
     final db = await database;
-    int inserted = 0;
 
-    await db.transaction((txn) async {
-      for (final payment in payments) {
-        final result = await txn.insert(
+    final beforeResult = await db.rawQuery(
+      'SELECT COUNT(*) as c FROM $tablePayments',
+    );
+    final before = beforeResult.first['c'] as int;
+
+    const chunkSize = 500;
+    for (int i = 0; i < payments.length; i += chunkSize) {
+      final end = (i + chunkSize).clamp(0, payments.length);
+      final chunk = payments.sublist(i, end);
+      final batch = db.batch();
+      for (final payment in chunk) {
+        batch.insert(
           tablePayments,
           payment,
           conflictAlgorithm: ConflictAlgorithm.ignore,
         );
-        if (result != 0) inserted++;
       }
-    });
+      await batch.commit(noResult: true);
+      onProgress?.call(end, payments.length);
+    }
 
-    return inserted;
+    final afterResult = await db.rawQuery(
+      'SELECT COUNT(*) as c FROM $tablePayments',
+    );
+    final after = afterResult.first['c'] as int;
+    return after - before;
   }
 
   /// Gets paginated payments with optional per-column filters.
@@ -382,6 +400,27 @@ class DatabaseService {
   }
 
   // ─── Import Helpers ──────────────────────────────────────────────
+
+  /// Returns the subset of [accountNumbers] that already exist in the accounts table.
+  /// Queries in chunks of 900 to stay within SQLite variable limits.
+  Future<Set<int>> getExistingAccountNumbers(Set<int> accountNumbers) async {
+    if (accountNumbers.isEmpty) return {};
+    final db = await database;
+    final result = <int>{};
+    final list = accountNumbers.toList();
+    const chunkSize = 900;
+    for (int i = 0; i < list.length; i += chunkSize) {
+      final end = (i + chunkSize).clamp(0, list.length);
+      final chunk = list.sublist(i, end);
+      final placeholders = List.filled(chunk.length, '?').join(',');
+      final rows = await db.rawQuery(
+        'SELECT account_number FROM $tableAccounts WHERE account_number IN ($placeholders)',
+        chunk,
+      );
+      result.addAll(rows.map((r) => r['account_number'] as int));
+    }
+    return result;
+  }
 
   /// Finds or creates an account and its subscriber group.
   ///

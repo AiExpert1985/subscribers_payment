@@ -45,6 +45,7 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
   // Loading states
   bool _isImporting = false;
   bool _isExporting = false;
+  String? _importStatus;
 
   // Fixed column widths
   static const double _kDeleteColWidth = 44.0;
@@ -115,6 +116,11 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
               : const Icon(Icons.upload_file),
           label: const Text('استيراد ملف التسديدات'),
         ),
+        if (_isImporting && _importStatus != null)
+          Text(
+            _importStatus!,
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
+          ),
         FilledButton.tonalIcon(
           onPressed: _isExporting ? null : _exportToExcel,
           icon: _isExporting
@@ -759,14 +765,22 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
 
     final db = ref.read(databaseServiceProvider);
     final importService = ImportService(db);
-    final importResult = await importService.importFiles(filePaths);
+    final importResult = await importService.importFiles(
+      filePaths,
+      onProgress: (label) {
+        if (mounted) setState(() => _importStatus = label);
+      },
+    );
 
     ref.read(importResultProvider.notifier).state = importResult;
     ref.read(lastImportTimeProvider.notifier).state = DateTime.now();
     ref.invalidate(paymentsProvider);
     ref.invalidate(totalPaymentCountProvider);
 
-    setState(() => _isImporting = false);
+    setState(() {
+      _isImporting = false;
+      _importStatus = null;
+    });
   }
 
   Future<void> _exportToExcel() async {
