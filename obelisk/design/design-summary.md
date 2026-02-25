@@ -183,3 +183,10 @@ _(none)_
 - Import alias mapping extended to recognise `type` and `address` column headers from Excel source files
 
 ---
+
+## 20260225-0937 | Update Import Headers, Add yyyyMMDD Date Format, Fix Filter Heights
+
+- Import date parsing extended to support compact yyyyMMDD format (e.g., 20191029).
+- Payment filter fields use uniform visual height through consistent padding/density settings.
+
+---

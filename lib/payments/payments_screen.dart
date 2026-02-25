@@ -82,10 +82,8 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
             const SizedBox(height: 12),
             Expanded(
               child: paymentsAsync.when(
-                data: (payments) =>
-                    _buildPaymentsTable(payments, currentPage),
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
+                data: (payments) => _buildPaymentsTable(payments, currentPage),
+                loading: () => const Center(child: CircularProgressIndicator()),
                 error: (error, _) => Center(child: Text('خطأ: $error')),
               ),
             ),
@@ -174,7 +172,10 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
       builder: (context, constraints) => SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: ConstrainedBox(
-          constraints: BoxConstraints(minWidth: constraints.maxWidth, maxWidth: constraints.maxWidth),
+          constraints: BoxConstraints(
+            minWidth: constraints.maxWidth,
+            maxWidth: constraints.maxWidth,
+          ),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -248,11 +249,7 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
           ),
           Expanded(
             flex: 3,
-            child: _textSearchField(
-              _addressSearchCtrl,
-              'address',
-              'العنوان',
-            ),
+            child: _textSearchField(_addressSearchCtrl, 'address', 'العنوان'),
           ),
           SizedBox(width: _kAddBtnWidth),
         ],
@@ -271,15 +268,16 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
         height: 32,
         child: TextField(
           controller: ctrl,
+          expands: true,
+          maxLines: null,
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(fontSize: 11, color: Colors.grey.shade500),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 8,
-              vertical: 0,
+              vertical: 6,
             ),
             border: const OutlineInputBorder(),
-            isDense: true,
           ),
           style: const TextStyle(fontSize: 12),
           onChanged: (value) => _onSearchChanged(columnKey, value),
@@ -364,18 +362,10 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
             if (value != null)
               GestureDetector(
                 onTap: () => onChanged(null),
-                child: Icon(
-                  Icons.clear,
-                  size: 12,
-                  color: Colors.grey.shade500,
-                ),
+                child: Icon(Icons.clear, size: 12, color: Colors.grey.shade500),
               )
             else
-              Icon(
-                Icons.calendar_today,
-                size: 12,
-                color: Colors.grey.shade500,
-              ),
+              Icon(Icons.calendar_today, size: 12, color: Colors.grey.shade500),
           ],
         ),
       ),
@@ -396,20 +386,11 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
             width: _kNumberColWidth,
             child: const Center(child: Text('#', style: headerStyle)),
           ),
-          Expanded(
-            flex: 2,
-            child: _columnHeader('رقم الحساب', headerStyle),
-          ),
-          Expanded(
-            flex: 3,
-            child: _columnHeader('اسم المشترك', headerStyle),
-          ),
+          Expanded(flex: 2, child: _columnHeader('رقم الحساب', headerStyle)),
+          Expanded(flex: 3, child: _columnHeader('اسم المشترك', headerStyle)),
           Expanded(flex: 3, child: _columnHeader('التاريخ', headerStyle)),
           Expanded(flex: 2, child: _columnHeader('المبلغ', headerStyle)),
-          Expanded(
-            flex: 2,
-            child: _columnHeader('رقم الختم', headerStyle),
-          ),
+          Expanded(flex: 2, child: _columnHeader('رقم الختم', headerStyle)),
           Expanded(flex: 2, child: _columnHeader('النوع', headerStyle)),
           Expanded(flex: 3, child: _columnHeader('العنوان', headerStyle)),
           SizedBox(
@@ -448,8 +429,7 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
   // ─── Data Row ──────────────────────────────────────────────────────
 
   Widget _buildDataRowWidget(Payment payment, int index, int currentPage) {
-    final rowNumber =
-        currentPage * DatabaseService.defaultPageSize + index + 1;
+    final rowNumber = currentPage * DatabaseService.defaultPageSize + index + 1;
     final isHovered = _hoveredPaymentId == payment.id;
 
     return MouseRegion(
@@ -483,10 +463,7 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
               child: Center(
                 child: Text(
                   '$rowNumber',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade500,
-                  ),
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
                 ),
               ),
             ),
@@ -532,11 +509,7 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
             ),
             Expanded(
               flex: 2,
-              child: _buildEditableCell(
-                payment,
-                'type',
-                payment.type ?? '',
-              ),
+              child: _buildEditableCell(payment, 'type', payment.type ?? ''),
             ),
             Expanded(
               flex: 3,

@@ -276,8 +276,12 @@ class ExcelParser {
         value.month,
         value.day,
       ).millisecondsSinceEpoch,
-      IntCellValue() => _tryParseExcelSerialDate(value.value.toDouble()),
-      DoubleCellValue() => _tryParseExcelSerialDate(value.value),
+      IntCellValue() =>
+        _tryParseExcelSerialDate(value.value.toDouble()) ??
+            _tryParseDateString(value.value.toString()),
+      DoubleCellValue() =>
+        _tryParseExcelSerialDate(value.value) ??
+            _tryParseDateString(value.value.toInt().toString()),
       TextCellValue() => _tryParseDateString(value.value.toString().trim()),
       _ => _tryParseDateString(value.toString().trim()),
     };
@@ -287,6 +291,20 @@ class ExcelParser {
   int? _tryParseDateString(String text) {
     final parsed = DateTime.tryParse(text);
     if (parsed != null) return parsed.millisecondsSinceEpoch;
+
+    // Try compact yyyyMMDD format (e.g., 20191029)
+    if (text.length == 8) {
+      final year = int.tryParse(text.substring(0, 4));
+      final month = int.tryParse(text.substring(4, 6));
+      final day = int.tryParse(text.substring(6, 8));
+      if (year != null && month != null && day != null) {
+        try {
+          return DateTime(year, month, day).millisecondsSinceEpoch;
+        } catch (_) {
+          // Fall through to other formats
+        }
+      }
+    }
 
     // Try common date formats: dd/MM/yyyy, dd-MM-yyyy
     final parts = text.split(RegExp(r'[/\-.]'));
