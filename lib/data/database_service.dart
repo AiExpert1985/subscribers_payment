@@ -226,25 +226,35 @@ class DatabaseService {
     return await db.insert(tablePayments, payment);
   }
 
-  /// Inserts payments in a single batch commit, skipping duplicates via INSERT OR IGNORE.
+  /// Inserts payments in chunked batch commits, skipping duplicates via INSERT OR IGNORE.
   /// Returns the number of successfully inserted rows.
-  Future<int> insertPaymentBatch(List<Map<String, dynamic>> payments) async {
+  /// Calls [onProgress] after each chunk with (rowsSaved, totalRows).
+  Future<int> insertPaymentBatch(
+    List<Map<String, dynamic>> payments, {
+    void Function(int saved, int total)? onProgress,
+  }) async {
     if (payments.isEmpty) return 0;
     final db = await database;
+    const chunkSize = 10000;
 
     final before =
         (await db.rawQuery('SELECT COUNT(*) as c FROM $tablePayments'))
             .first['c'] as int;
 
-    final batch = db.batch();
-    for (final payment in payments) {
-      batch.insert(
-        tablePayments,
-        payment,
-        conflictAlgorithm: ConflictAlgorithm.ignore,
-      );
+    for (int i = 0; i < payments.length; i += chunkSize) {
+      final end = (i + chunkSize).clamp(0, payments.length);
+      final chunk = payments.sublist(i, end);
+      final batch = db.batch();
+      for (final payment in chunk) {
+        batch.insert(
+          tablePayments,
+          payment,
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
+      }
+      await batch.commit(noResult: true);
+      onProgress?.call(end, payments.length);
     }
-    await batch.commit(noResult: true);
 
     final after =
         (await db.rawQuery('SELECT COUNT(*) as c FROM $tablePayments'))

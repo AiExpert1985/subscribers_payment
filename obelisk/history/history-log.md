@@ -45,6 +45,16 @@
 
 ---
 
+## 20260302-0000 | Fix Excel Import Freeze and Add Console Progress Logging | APPROVED
+
+**Intent:** The app freezes on 500k-row imports because all rows are committed in a single `batch.commit()` on the Dart main isolate, blocking the event loop. The fix chunks commits so the event loop can process UI frames between chunks. Console `debugPrint` logs with timestamps are added at each phase boundary to give full visibility into where time is spent.
+**Key Decisions:**
+- Chunk size: 10,000 rows (50 chunks for 500k rows — frequent enough for feedback, not so small it adds overhead)
+- Progress: `debugPrint` only, no UI changes
+- Inserted-row count: single `COUNT(*)` before and after all chunks (unchanged approach, just relocated outside the chunk loop)
+
+---
+
 ## 20260224-1335 | Filter Excel Import by Account Number Starting with 10 | APPROVED
 
 **Intent:** Filter out irrelevant payment rows during Excel import based on account number prefix.

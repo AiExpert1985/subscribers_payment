@@ -50,9 +50,24 @@ class ExcelParser {
     final fileName = filePath.split(Platform.pathSeparator).last;
 
     try {
+      final sw = Stopwatch()..start();
+
+      debugPrint('[Parser] [$fileName] Step 1/3: Reading file bytes...');
       final bytes = File(filePath).readAsBytesSync();
+      debugPrint(
+        '[Parser] [$fileName] Step 2/3: Decoding Excel structure... (${bytes.length} bytes read in ${sw.elapsedMilliseconds}ms)',
+      );
+
       final excel = Excel.decodeBytes(bytes);
-      return _parseExcel(excel, fileName);
+      debugPrint(
+        '[Parser] [$fileName] Step 3/3: Parsing rows... (decode took ${sw.elapsedMilliseconds}ms)',
+      );
+
+      final result = _parseExcel(excel, fileName, sw);
+      debugPrint(
+        '[Parser] [$fileName] Done: ${result.rows.length} rows accepted (${sw.elapsedMilliseconds}ms total)',
+      );
+      return result;
     } catch (e) {
       debugPrint('ExcelParser: فشل استيراد الملف "$fileName": $e');
       return ExcelParseResult(
@@ -64,22 +79,24 @@ class ExcelParser {
   }
 
   /// Parses an Excel object across all its worksheets.
-  ExcelParseResult _parseExcel(Excel excel, String fileName) {
+  ExcelParseResult _parseExcel(Excel excel, String fileName, Stopwatch sw) {
     final allRows = <Map<String, dynamic>>[];
     final errors = <String>[];
 
     for (final sheetName in excel.tables.keys) {
       final sheet = excel.tables[sheetName]!;
-      if (sheet.rows.isEmpty) continue;
+      // Cache once — sheet.rows rebuilds the entire matrix on every call.
+      final sheetRows = sheet.rows;
+      if (sheetRows.isEmpty) continue;
 
-      final mapping = _findColumnMapping(sheet.rows.first);
+      final mapping = _findColumnMapping(sheetRows.first);
       if (mapping == null) {
         errors.add('التبويب "$sheetName": لم يتم العثور على الأعمدة المطلوبة');
         continue;
       }
 
-      final sheetRows = _parseSheet(sheet, mapping);
-      allRows.addAll(sheetRows);
+      final parsedRows = _parseSheet(sheetRows, mapping, sheetName, sw);
+      allRows.addAll(parsedRows);
     }
 
     return ExcelParseResult(fileName: fileName, rows: allRows, errors: errors);
@@ -138,14 +155,23 @@ class ExcelParser {
     );
   }
 
-  /// Parses data rows from a worksheet using the column mapping.
-  List<Map<String, dynamic>> _parseSheet(Sheet sheet, _ColumnMapping mapping) {
+  /// Parses data rows from a pre-cached worksheet row list using the column mapping.
+  List<Map<String, dynamic>> _parseSheet(
+    List<List<Data?>> sheetRows,
+    _ColumnMapping mapping,
+    String sheetName,
+    Stopwatch sw,
+  ) {
     final rows = <Map<String, dynamic>>[];
+    final total = sheetRows.length - 1; // exclude header
+    debugPrint('[Parser] Sheet "$sheetName": $total rows to parse (${sw.elapsedMilliseconds}ms)');
 
     // Skip header row (index 0), parse data rows
-    for (int i = 1; i < sheet.rows.length; i++) {
-      final row = sheet.rows[i];
-      final parsed = _parseRow(row, mapping);
+    for (int i = 1; i < sheetRows.length; i++) {
+      if (i % 50000 == 0) {
+        debugPrint('[Parser] Sheet "$sheetName": parsed $i / $total rows (${sw.elapsedMilliseconds}ms)');
+      }
+      final parsed = _parseRow(sheetRows[i], mapping);
       if (parsed != null) rows.add(parsed);
     }
 

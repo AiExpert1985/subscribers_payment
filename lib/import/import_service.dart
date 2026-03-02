@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import '../data/database_service.dart';
 import 'excel_parser.dart';
@@ -45,17 +47,31 @@ class ImportService {
     final errors = <String>[];
 
     for (final path in filePaths) {
+      final fileName = path.split(RegExp(r'[\\/]')).last;
+      final fileWatch = Stopwatch()..start();
+
+      debugPrint('[Import] [$fileName] Parsing started');
       onProgress?.call('جاري قراءة الملف...');
+      final parseTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+        debugPrint(
+          '[Import] [$fileName] Still parsing... (${fileWatch.elapsedMilliseconds}ms)',
+        );
+      });
       final parseResult = await compute(_parseFile, path);
+      parseTimer.cancel();
 
       if (!parseResult.isSuccessful) {
         failedFiles++;
         errors.add('${parseResult.fileName}: ${parseResult.errors.join(", ")}');
         debugPrint(
-          'ImportService: import failed "${parseResult.fileName}": ${parseResult.errors.join(", ")}',
+          '[Import] [$fileName] Parse failed (${fileWatch.elapsedMilliseconds}ms): ${parseResult.errors.join(", ")}',
         );
         continue;
       }
+
+      debugPrint(
+        '[Import] [$fileName] Parse complete: ${parseResult.rows.length} rows (${fileWatch.elapsedMilliseconds}ms)',
+      );
 
       // Collect unique account numbers and their subscriber names
       onProgress?.call('جاري معالجة الحسابات...');
@@ -68,6 +84,10 @@ class ImportService {
         }
       }
 
+      debugPrint(
+        '[Import] [$fileName] Processing ${accountNumbers.length} unique accounts (${fileWatch.elapsedMilliseconds}ms)',
+      );
+
       // Load all existing accounts in one query, then create only missing ones
       final existing = await _db.getExistingAccountNumbers(accountNumbers);
       for (final accNum in accountNumbers) {
@@ -79,10 +99,29 @@ class ImportService {
         }
       }
 
+      debugPrint(
+        '[Import] [$fileName] Accounts ready (${fileWatch.elapsedMilliseconds}ms)',
+      );
+
       // Notify user that parsing is done and saving is starting
       onProgress?.call('تم قراءة ${parseResult.rows.length} سجل — جاري الحفظ...');
-      final inserted = await _db.insertPaymentBatch(parseResult.rows);
+      debugPrint(
+        '[Import] [$fileName] DB save started: ${parseResult.rows.length} rows (${fileWatch.elapsedMilliseconds}ms)',
+      );
+
+      final inserted = await _db.insertPaymentBatch(
+        parseResult.rows,
+        onProgress: (saved, total) {
+          debugPrint(
+            '[Import] [$fileName] Saved $saved / $total (${fileWatch.elapsedMilliseconds}ms)',
+          );
+        },
+      );
       final duplicates = parseResult.rows.length - inserted;
+
+      debugPrint(
+        '[Import] [$fileName] Done: $inserted inserted, $duplicates duplicates (${fileWatch.elapsedMilliseconds}ms total)',
+      );
 
       totalInserted += inserted;
       totalDuplicates += duplicates;

@@ -203,3 +203,10 @@ _(none)_
 - Import pipeline runs Excel parsing in a background isolate; DB inserts use sqflite Batch in 500-row chunks with optional progress callback.
 
 ---
+
+## 20260302-0000 | Fix Excel Import Freeze and Add Console Progress Logging
+
+**Date:** 2026-03-02
+- DB batch inserts are chunked at 10,000 rows per commit (previously one commit for the entire file) to prevent event-loop blocking on large imports.
+
+---
