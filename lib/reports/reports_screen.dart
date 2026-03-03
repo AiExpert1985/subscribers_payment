@@ -401,13 +401,15 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             textDirection: pw.TextDirection.rtl,
             theme: pw.ThemeData.withFont(base: pdfFont, bold: pdfFont),
             build: (_) => [
-              pw.Text(
-                'تقرير المشترك',
-                style: pw.TextStyle(
-                  fontSize: 20,
-                  fontWeight: pw.FontWeight.bold,
+              pw.Center(
+                child: pw.Text(
+                  'تقرير المشترك',
+                  style: pw.TextStyle(
+                    fontSize: 20,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                  textDirection: pw.TextDirection.rtl,
                 ),
-                textDirection: pw.TextDirection.rtl,
               ),
               pw.SizedBox(height: 12),
               _pdfLine('اسم المشترك', report.subscriberName),
@@ -426,29 +428,28 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                 intl.DateFormat('yyyy/MM/dd HH:mm').format(report.generatedAt),
               ),
               pw.SizedBox(height: 16),
-              // Columns reversed so first column appears on the right in RTL
               pw.TableHelper.fromTextArray(
                 headers: const [
-                  'رقم الختم',
-                  'المبلغ',
-                  'التاريخ',
-                  'اسم المشترك',
                   'رقم الحساب',
+                  'اسم المشترك',
+                  'التاريخ',
+                  'المبلغ',
+                  'رقم الختم',
                 ],
                 data: report.payments
                     .map(
                       (payment) => [
-                        payment.stampNumber ?? '',
-                        numberFormat.format(payment.amount),
-                        _formatDateFromTimestamp(payment.paymentDate),
-                        report.subscriberName,
                         payment.referenceAccountNumber.toString(),
+                        report.subscriberName,
+                        _formatDateFromTimestamp(payment.paymentDate),
+                        numberFormat.format(payment.amount),
+                        payment.stampNumber ?? '',
                       ],
                     )
                     .toList(),
                 headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                cellAlignment: pw.Alignment.centerRight,
-                headerAlignment: pw.Alignment.centerRight,
+                cellAlignment: pw.Alignment.center,
+                headerAlignment: pw.Alignment.center,
                 cellStyle: const pw.TextStyle(fontSize: 10),
                 headerDecoration: const pw.BoxDecoration(
                   color: PdfColors.grey300,
@@ -465,23 +466,13 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
   pw.Widget _pdfLine(String title, String value) {
     return pw.Padding(
-      padding: const pw.EdgeInsets.symmetric(vertical: 2),
-      child: pw.Row(
-        children: [
-          // Value on left (expands to fill remaining space)
-          pw.Expanded(
-            child: pw.Text(value, textDirection: pw.TextDirection.rtl),
-          ),
-          // Title label on right (fixed width, read first in RTL)
-          pw.SizedBox(
-            width: 130,
-            child: pw.Text(
-              '$title:',
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-              textDirection: pw.TextDirection.rtl,
-            ),
-          ),
-        ],
+      padding: const pw.EdgeInsets.symmetric(vertical: 3),
+      child: pw.Center(
+        child: pw.Text(
+          '$title: $value',
+          textAlign: pw.TextAlign.center,
+          textDirection: pw.TextDirection.rtl,
+        ),
       ),
     );
   }

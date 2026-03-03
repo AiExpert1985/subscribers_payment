@@ -56,7 +56,7 @@ Generated: 2026-03-03
 - X reset button as first child (visual right); appears only when a filter is active
 - Each row: # number, subscriber name (inline editable), account chips (uniform 130px), delete (last child = visual left)
 - No hover pen/edit icon — inline tap-to-edit only
-- Account chips 130px wide for stable layout across pages
+- Account chips 160px wide for stable layout across pages
 - Delete group cascades to accounts; delete confirmation always required
 - New DB methods: `getSubscriberGroupsPaginated`, `getTotalSubscriberGroupCount`
 - New providers: `currentAccountPageProvider`, `accountNameSearchQueryProvider`, `accountSearchQueryProvider`, `totalAccountGroupsProvider`, `totalAccountPagesProvider`
@@ -80,3 +80,13 @@ Generated: 2026-03-03
 _(none)_
 
 ## Unprocessed
+
+## 20260303-0100 | Accounts Chip Width, PDF Centering, and Column Headers
+
+- Account chips: 130px → 160px (line 57 row-description still says "uniform 130px" — reconcile on next maintain-project run)
+- Accounts screen: static column header row added above ListView; headers: #, اسم المشترك, ارقام الحساب
+- PDF `_pdfLine`: replaced 2-column Row layout with `pw.Center(pw.Text('$title: $value', textAlign: center, textDirection: rtl))`
+- PDF table: columns in natural order (رقم الحساب → رقم الختم); `cellAlignment` and `headerAlignment` → `pw.Alignment.center`
+- PDF header: wrapped in `pw.Center`
+
+---

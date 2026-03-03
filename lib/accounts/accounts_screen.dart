@@ -36,7 +36,7 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
   // Fixed column widths (match payments screen)
   static const double _kRowNumWidth = 40.0;
   static const double _kNameWidth = 160.0;
-  static const double _kAccountChipWidth = 130.0;
+  static const double _kAccountChipWidth = 160.0;
 
   @override
   void dispose() {
@@ -157,6 +157,54 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
     );
   }
 
+  // ─── Column Headers ──────────────────────────────────────────────
+
+  Widget _buildColumnHeaders() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          SizedBox(
+            width: _kRowNumWidth,
+            child: Center(
+              child: Text(
+                '#',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade700,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: _kNameWidth,
+            child: Text(
+              'اسم المشترك',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade700,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'ارقام الحساب',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ─── Groups List ─────────────────────────────────────────────────
 
   Widget _buildGroupsList(
@@ -172,15 +220,24 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
       );
     }
 
-    return ListView.separated(
-      itemCount: groups.length,
-      separatorBuilder: (_, _) =>
-          Divider(height: 1, thickness: 0.5, color: Colors.grey.shade200),
-      itemBuilder: (context, index) {
-        final rowNumber =
-            currentPage * DatabaseService.defaultPageSize + index + 1;
-        return _buildGroupRow(groups[index], rowNumber);
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildColumnHeaders(),
+        Divider(height: 1, thickness: 1, color: Colors.grey.shade300),
+        Expanded(
+          child: ListView.separated(
+            itemCount: groups.length,
+            separatorBuilder: (_, _) =>
+                Divider(height: 1, thickness: 0.5, color: Colors.grey.shade200),
+            itemBuilder: (context, index) {
+              final rowNumber =
+                  currentPage * DatabaseService.defaultPageSize + index + 1;
+              return _buildGroupRow(groups[index], rowNumber);
+            },
+          ),
+        ),
+      ],
     );
   }
 
