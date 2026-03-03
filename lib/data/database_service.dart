@@ -20,7 +20,7 @@ class DatabaseService {
   static const String tablePayments = 'payments';
 
   // Pagination defaults
-  static const int defaultPageSize = 50;
+  static const int defaultPageSize = 20;
 
   /// Gets the database instance, initializing it if necessary
   Future<Database> get database async {
@@ -119,6 +119,72 @@ class DatabaseService {
   Future<List<Map<String, dynamic>>> getAllSubscriberGroups() async {
     final db = await database;
     return await db.query(tableSubscriberGroups);
+  }
+
+  /// Gets paginated subscriber groups with optional name and account-number filters.
+  Future<List<Map<String, dynamic>>> getSubscriberGroupsPaginated({
+    int page = 0,
+    int pageSize = defaultPageSize,
+    String nameQuery = '',
+    String accountQuery = '',
+  }) async {
+    final db = await database;
+    final conditions = <String>[];
+    final args = <Object?>[];
+
+    if (nameQuery.isNotEmpty) {
+      conditions.add('sg.name LIKE ?');
+      args.add('%$nameQuery%');
+    }
+    if (accountQuery.isNotEmpty) {
+      conditions.add(
+        'EXISTS (SELECT 1 FROM $tableAccounts a'
+        ' WHERE a.subscriber_group_id = sg.id'
+        ' AND CAST(a.account_number AS TEXT) LIKE ?)',
+      );
+      args.add('%$accountQuery%');
+    }
+
+    final where =
+        conditions.isEmpty ? '' : 'WHERE ${conditions.join(' AND ')}';
+    args.addAll([pageSize, page * pageSize]);
+
+    return await db.rawQuery(
+      'SELECT sg.* FROM $tableSubscriberGroups sg $where'
+      ' ORDER BY sg.id ASC LIMIT ? OFFSET ?',
+      args,
+    );
+  }
+
+  /// Returns the total count of subscriber groups matching the given filters.
+  Future<int> getTotalSubscriberGroupCount({
+    String nameQuery = '',
+    String accountQuery = '',
+  }) async {
+    final db = await database;
+    final conditions = <String>[];
+    final args = <Object?>[];
+
+    if (nameQuery.isNotEmpty) {
+      conditions.add('sg.name LIKE ?');
+      args.add('%$nameQuery%');
+    }
+    if (accountQuery.isNotEmpty) {
+      conditions.add(
+        'EXISTS (SELECT 1 FROM $tableAccounts a'
+        ' WHERE a.subscriber_group_id = sg.id'
+        ' AND CAST(a.account_number AS TEXT) LIKE ?)',
+      );
+      args.add('%$accountQuery%');
+    }
+
+    final where =
+        conditions.isEmpty ? '' : 'WHERE ${conditions.join(' AND ')}';
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) as count FROM $tableSubscriberGroups sg $where',
+      args.isEmpty ? null : args,
+    );
+    return result.first['count'] as int;
   }
 
   /// Gets a subscriber group by ID

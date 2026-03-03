@@ -50,7 +50,17 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
   // Fixed column widths
   static const double _kDeleteColWidth = 44.0;
   static const double _kNumberColWidth = 40.0;
-  static const double _kAddBtnWidth = 148.0;
+  static const double _kResetBtnWidth = 36.0;
+
+  bool get _hasPaymentFilters =>
+      _accountSearchCtrl.text.isNotEmpty ||
+      _nameSearchCtrl.text.isNotEmpty ||
+      _amountSearchCtrl.text.isNotEmpty ||
+      _stampSearchCtrl.text.isNotEmpty ||
+      _typeSearchCtrl.text.isNotEmpty ||
+      _addressSearchCtrl.text.isNotEmpty ||
+      _dateFromFilter != null ||
+      _dateToFilter != null;
 
   @override
   void dispose() {
@@ -69,6 +79,7 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
   Widget build(BuildContext context) {
     final paymentsAsync = ref.watch(paymentsProvider);
     final totalPagesAsync = ref.watch(totalPagesProvider);
+    final totalCountAsync = ref.watch(totalPaymentCountProvider);
     final currentPage = ref.watch(currentPageProvider);
     final importResult = ref.watch(importResultProvider);
     final lastImport = ref.watch(lastImportTimeProvider);
@@ -89,7 +100,7 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            _buildPagination(currentPage, totalPagesAsync),
+            _buildPagination(currentPage, totalPagesAsync, totalCountAsync),
             if (lastImport != null) _buildFooter(lastImport),
           ],
         ),
@@ -100,12 +111,10 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
   // ─── Action Bar ────────────────────────────────────────────────────
 
   Widget _buildActionBar(ImportResult? importResult) {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 8,
-      crossAxisAlignment: WrapCrossAlignment.center,
+    return Row(
       children: [
-        FilledButton.tonalIcon(
+        // Far right (first = rightmost in RTL): import + export
+        FilledButton.icon(
           onPressed: _isImporting ? null : _importFiles,
           icon: _isImporting
               ? const SizedBox(
@@ -116,12 +125,8 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
               : const Icon(Icons.upload_file),
           label: const Text('استيراد ملف التسديدات'),
         ),
-        if (_isImporting && _importStatus != null)
-          Text(
-            _importStatus!,
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-        FilledButton.tonalIcon(
+        const SizedBox(width: 8),
+        FilledButton.icon(
           onPressed: _isExporting ? null : _exportToExcel,
           icon: _isExporting
               ? const SizedBox(
@@ -132,7 +137,24 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
               : const Icon(Icons.download),
           label: const Text('تصدير إلى Excel'),
         ),
-        if (importResult != null) _buildImportSummary(importResult),
+        if (_isImporting && _importStatus != null) ...[
+          const SizedBox(width: 8),
+          Text(
+            _importStatus!,
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+        ],
+        if (importResult != null) ...[
+          const SizedBox(width: 8),
+          _buildImportSummary(importResult),
+        ],
+        const Spacer(),
+        // Far left (last = leftmost in RTL): add payment
+        FilledButton.icon(
+          onPressed: _showAddPaymentDialog,
+          icon: const Icon(Icons.add, size: 16),
+          label: const Text('إضافة تسديد', style: TextStyle(fontSize: 13)),
+        ),
       ],
     );
   }
@@ -218,7 +240,20 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          SizedBox(width: _kDeleteColWidth),
+          // X reset: far right (first = rightmost in RTL), only when active
+          SizedBox(
+            width: _kResetBtnWidth,
+            child: _hasPaymentFilters
+                ? IconButton(
+                    icon: const Icon(Icons.close, color: Colors.red, size: 16),
+                    onPressed: _resetFilters,
+                    tooltip: 'مسح التصفية',
+                    padding: EdgeInsets.zero,
+                    constraints:
+                        const BoxConstraints(minWidth: 32, minHeight: 32),
+                  )
+                : null,
+          ),
           SizedBox(width: _kNumberColWidth),
           Expanded(
             flex: 2,
@@ -257,7 +292,7 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
             flex: 3,
             child: _textSearchField(_addressSearchCtrl, 'address', 'العنوان'),
           ),
-          SizedBox(width: _kAddBtnWidth),
+          SizedBox(width: _kDeleteColWidth),
         ],
       ),
     );
@@ -387,7 +422,7 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          SizedBox(width: _kDeleteColWidth),
+          SizedBox(width: _kResetBtnWidth),
           SizedBox(
             width: _kNumberColWidth,
             child: const Center(child: Text('#', style: headerStyle)),
@@ -399,27 +434,7 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
           Expanded(flex: 2, child: _columnHeader('رقم الختم', headerStyle)),
           Expanded(flex: 2, child: _columnHeader('النوع', headerStyle)),
           Expanded(flex: 3, child: _columnHeader('العنوان', headerStyle)),
-          SizedBox(
-            width: _kAddBtnWidth,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: FilledButton.icon(
-                onPressed: _showAddPaymentDialog,
-                icon: const Icon(Icons.add, size: 16),
-                label: const Text(
-                  'إضافة تسديد',
-                  style: TextStyle(fontSize: 12),
-                ),
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 0,
-                  ),
-                  minimumSize: const Size(0, 32),
-                ),
-              ),
-            ),
-          ),
+          SizedBox(width: _kDeleteColWidth),
         ],
       ),
     );
@@ -450,20 +465,7 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
         ),
         child: Row(
           children: [
-            SizedBox(
-              width: _kDeleteColWidth,
-              child: IconButton(
-                icon: const Icon(
-                  Icons.delete_outline,
-                  color: Colors.red,
-                  size: 18,
-                ),
-                onPressed: () => _confirmDelete(payment),
-                tooltip: 'حذف',
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-              ),
-            ),
+            SizedBox(width: _kResetBtnWidth),
             SizedBox(
               width: _kNumberColWidth,
               child: Center(
@@ -525,7 +527,20 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
                 payment.address ?? '',
               ),
             ),
-            SizedBox(width: _kAddBtnWidth),
+            SizedBox(
+              width: _kDeleteColWidth,
+              child: IconButton(
+                icon: const Icon(
+                  Icons.delete_outline,
+                  color: Colors.red,
+                  size: 18,
+                ),
+                onPressed: () => _confirmDelete(payment),
+                tooltip: 'حذف',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              ),
+            ),
           ],
         ),
       ),
@@ -573,6 +588,23 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
         ),
       ),
     );
+  }
+
+  // ─── Reset Filters ─────────────────────────────────────────────────
+
+  void _resetFilters() {
+    _accountSearchCtrl.clear();
+    _nameSearchCtrl.clear();
+    _amountSearchCtrl.clear();
+    _stampSearchCtrl.clear();
+    _typeSearchCtrl.clear();
+    _addressSearchCtrl.clear();
+    setState(() {
+      _dateFromFilter = null;
+      _dateToFilter = null;
+    });
+    ref.read(paymentFiltersProvider.notifier).state = {};
+    ref.read(currentPageProvider.notifier).state = 0;
   }
 
   // ─── Search Callbacks ──────────────────────────────────────────────
@@ -679,32 +711,63 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
 
   // ─── Pagination ────────────────────────────────────────────────────
 
-  Widget _buildPagination(int currentPage, AsyncValue<int> totalPagesAsync) {
+  Widget _buildPagination(
+    int currentPage,
+    AsyncValue<int> totalPagesAsync,
+    AsyncValue<int> totalCountAsync,
+  ) {
     return totalPagesAsync.when(
-      data: (totalPages) => Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.chevron_left),
-            onPressed: currentPage > 0
-                ? () => ref.read(currentPageProvider.notifier).state--
-                : null,
-            tooltip: 'الصفحة السابقة',
-          ),
-          const SizedBox(width: 8),
-          Text(
-            'صفحة ${currentPage + 1} من $totalPages',
-            style: const TextStyle(fontSize: 13),
-          ),
-          const SizedBox(width: 8),
-          IconButton(
-            icon: const Icon(Icons.chevron_right),
-            onPressed: currentPage < totalPages - 1
-                ? () => ref.read(currentPageProvider.notifier).state++
-                : null,
-            tooltip: 'الصفحة التالية',
-          ),
-        ],
+      data: (totalPages) => totalCountAsync.when(
+        data: (totalCount) {
+          final pageSize = DatabaseService.defaultPageSize;
+          final startRow = totalCount == 0 ? 0 : currentPage * pageSize + 1;
+          final endRow = ((currentPage + 1) * pageSize).clamp(0, totalCount);
+
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.first_page),
+                onPressed: currentPage > 0
+                    ? () =>
+                        ref.read(currentPageProvider.notifier).state = 0
+                    : null,
+                tooltip: 'الصفحة الأولى',
+              ),
+              IconButton(
+                icon: const Icon(Icons.chevron_left),
+                onPressed: currentPage > 0
+                    ? () => ref.read(currentPageProvider.notifier).state--
+                    : null,
+                tooltip: 'السابق',
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'من $startRow إلى $endRow',
+                style: const TextStyle(fontSize: 13),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(Icons.chevron_right),
+                onPressed: currentPage < totalPages - 1
+                    ? () => ref.read(currentPageProvider.notifier).state++
+                    : null,
+                tooltip: 'التالي',
+              ),
+              IconButton(
+                icon: const Icon(Icons.last_page),
+                onPressed: currentPage < totalPages - 1
+                    ? () => ref
+                          .read(currentPageProvider.notifier)
+                          .state = totalPages - 1
+                    : null,
+                tooltip: 'الصفحة الأخيرة',
+              ),
+            ],
+          );
+        },
+        loading: () => const SizedBox.shrink(),
+        error: (_, _) => const SizedBox.shrink(),
       ),
       loading: () => const SizedBox.shrink(),
       error: (_, _) => const SizedBox.shrink(),

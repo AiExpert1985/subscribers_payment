@@ -63,18 +63,48 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
-              controller: _accountCtrl,
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: const InputDecoration(
-                labelText: 'رقم الحساب',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 10),
+            // All filters in one row
             Row(
               children: [
+                // X reset: far right (first child = rightmost in RTL), only when active
+                SizedBox(
+                  width: 32,
+                  child: _hasReportFilters
+                      ? IconButton(
+                          icon: const Icon(
+                            Icons.close,
+                            color: Colors.red,
+                            size: 16,
+                          ),
+                          onPressed: _resetFilters,
+                          tooltip: 'مسح التصفية',
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(
+                            minWidth: 32,
+                            minHeight: 32,
+                          ),
+                        )
+                      : null,
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  flex: 2,
+                  child: TextField(
+                    controller: _accountCtrl,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: const InputDecoration(
+                      labelText: 'رقم الحساب',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
                 Expanded(
                   child: _DateField(
                     label: 'من تاريخ',
@@ -107,12 +137,12 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
               ],
             ),
             const SizedBox(height: 10),
-            Align(
-              alignment: AlignmentDirectional.centerStart,
+            // Generate button centered
+            Center(
               child: FilledButton.icon(
                 onPressed: _isLoading ? null : _generateReport,
                 icon: const Icon(Icons.description_outlined),
-                label: const Text('Generate Report'),
+                label: const Text('انشاء تقرير'),
               ),
             ),
           ],
@@ -251,6 +281,19 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     );
   }
 
+  bool get _hasReportFilters =>
+      _accountCtrl.text.isNotEmpty || _fromDate != null || _toDate != null;
+
+  void _resetFilters() {
+    _accountCtrl.clear();
+    setState(() {
+      _fromDate = null;
+      _toDate = null;
+      _errorMessage = null;
+      _report = null;
+    });
+  }
+
   Future<void> _generateReport() async {
     final accountNumber = int.tryParse(_accountCtrl.text.trim());
     if (accountNumber == null) {
@@ -355,6 +398,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
           pw.MultiPage(
             pageFormat: format,
             margin: const pw.EdgeInsets.all(24),
+            textDirection: pw.TextDirection.rtl,
             theme: pw.ThemeData.withFont(base: pdfFont, bold: pdfFont),
             build: (_) => [
               pw.Text(
@@ -382,22 +426,23 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                 intl.DateFormat('yyyy/MM/dd HH:mm').format(report.generatedAt),
               ),
               pw.SizedBox(height: 16),
+              // Columns reversed so first column appears on the right in RTL
               pw.TableHelper.fromTextArray(
                 headers: const [
-                  'رقم الحساب',
-                  'اسم المشترك',
-                  'التاريخ',
-                  'المبلغ',
                   'رقم الختم',
+                  'المبلغ',
+                  'التاريخ',
+                  'اسم المشترك',
+                  'رقم الحساب',
                 ],
                 data: report.payments
                     .map(
                       (payment) => [
-                        payment.referenceAccountNumber.toString(),
-                        report.subscriberName,
-                        _formatDateFromTimestamp(payment.paymentDate),
-                        numberFormat.format(payment.amount),
                         payment.stampNumber ?? '',
+                        numberFormat.format(payment.amount),
+                        _formatDateFromTimestamp(payment.paymentDate),
+                        report.subscriberName,
+                        payment.referenceAccountNumber.toString(),
                       ],
                     )
                     .toList(),
@@ -408,13 +453,6 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                 headerDecoration: const pw.BoxDecoration(
                   color: PdfColors.grey300,
                 ),
-                cellAlignments: const {
-                  0: pw.Alignment.centerRight,
-                  1: pw.Alignment.centerRight,
-                  2: pw.Alignment.centerRight,
-                  3: pw.Alignment.centerRight,
-                  4: pw.Alignment.centerRight,
-                },
               ),
             ],
           ),
@@ -430,16 +468,18 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       padding: const pw.EdgeInsets.symmetric(vertical: 2),
       child: pw.Row(
         children: [
+          // Value on left (expands to fill remaining space)
+          pw.Expanded(
+            child: pw.Text(value, textDirection: pw.TextDirection.rtl),
+          ),
+          // Title label on right (fixed width, read first in RTL)
           pw.SizedBox(
-            width: 110,
+            width: 130,
             child: pw.Text(
               '$title:',
               style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
               textDirection: pw.TextDirection.rtl,
             ),
-          ),
-          pw.Expanded(
-            child: pw.Text(value, textDirection: pw.TextDirection.rtl),
           ),
         ],
       ),

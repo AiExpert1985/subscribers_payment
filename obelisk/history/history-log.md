@@ -55,6 +55,19 @@
 
 ---
 
+## 20260303-0000 | UI/UX Overhaul — Pagination, RTL Fixes, PDF, and Accounts Screen | APPROVED
+
+**Intent:** Unify and improve UI/UX across all three screens with consistent pagination (20 rows, range display, first/last/prev/next), RTL-correct action bar layouts, dual filters on Accounts, a uniform X reset button pattern, and correct Arabic PDF rendering.
+**Key Decisions:**
+- RTL Row rule: first child = rightmost (X reset, import/export); last child = leftmost (delete, add-payment)
+- X reset: `SizedBox(fixedWidth, child: condition ? button : null)` — preserves layout width while toggling visibility
+- PDF RTL: `pw.MultiPage(textDirection: rtl)` + reversed `pw.Row` children (pw.Row has no textDirection param) + reversed table columns
+- defaultPageSize 50 → 20 globally; both screens use server-side LIMIT/OFFSET pagination
+- Flutter `Container` cannot have both `color:` and `decoration:` — color moved into `BoxDecoration`
+- Account chips fixed at 130px width for layout stability
+
+---
+
 ## 20260224-1335 | Filter Excel Import by Account Number Starting with 10 | APPROVED
 
 **Intent:** Filter out irrelevant payment rows during Excel import based on account number prefix.

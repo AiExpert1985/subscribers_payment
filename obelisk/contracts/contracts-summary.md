@@ -1,71 +1,44 @@
 # Contracts Summary
 
-Generated: 2026-02-16
+Generated: 2026-03-03
 
 ## System Identity
-_(empty — populated after first maintenance)_
+
+Payment consolidation system for 11+ years of Excel-based historical payment records. Arabic-only, single-user, Windows desktop application.
 
 ## Active Contracts
-_(empty — populated after first maintenance)_
+
+**1. Payment Immutability**
+Payment records are never auto-modified or auto-deleted. Only explicit manual user action (edit/delete) can change a payment record. No system process, import, or mapping change may alter existing payment data.
+
+**2. Duplicate Prevention**
+A payment is duplicate when the combination of `reference_account_number` + `payment_date` + `amount` already exists. Duplicates must be rejected during import and manual entry. Enforced via composite unique index at database level.
+
+**3. Global Account Uniqueness**
+Each `account_number` exists exactly once across all subscriber groups. Enforced via unique constraint at database level.
+
+**4. Dynamic Mapping Resolution**
+Account-to-subscriber-group mapping changes immediately affect all searches, reports, and display. Mapping changes never modify stored payment records.
+
+**5. Account Auto-Assign** _(supersedes original Import Auto-Create)_
+When a payment is added (via import or manual entry) with an unknown `reference_account_number`:
+- The system first searches for an existing subscriber group whose name exactly matches the payment's subscriber name.
+- If a match is found, the new account is added to that group.
+- If no match is found (or subscriber name is empty), a new subscriber group is created.
+- **Import-only constraint**: Only rows with an account number starting with '10' (after trimming spaces) are processed during Excel import. Rows with other prefixes are silently ignored.
+
+**6. Subscriber Group Name Uniqueness**
+Non-empty subscriber group names must be unique across all groups. Enforced at database level via partial unique index (`WHERE name != ''`). Prevents ambiguous group resolution during auto-assign.
+
+**7. Delete Confirmation**
+All destructive delete actions (group, account, payment) must present a confirmation dialog before executing. No silent deletes.
+
+**Deletion Rules:**
+- Delete subscriber group: Cascade deletes all accounts in the group. Never touches payments table.
+- Delete account: Removes from group. Payments referencing it remain unchanged (become "unmapped").
+- Delete payment: Manual user action only.
 
 ## Non-Goals
-_(empty — populated after first maintenance)_
-
-## Unprocessed
-
-### 20260219 | Auto-assign new accounts to existing subscriber groups by name match
-
-**Action:** update
-**Change:**
-- Contract #5 — Replace: "Import Auto-Create: When importing a payment with an unknown `reference_account_number`, the system auto-creates a new subscriber group and account entry."
-  With: "Account Auto-Assign: When a payment is added (via import or manual entry) with an unknown `reference_account_number`, the system first searches for an existing subscriber group whose name exactly matches the payment's subscriber name. If a match is found, the new account is added to that group. If no match is found (or subscriber name is empty), a new subscriber group is created and the account is added to it."
-
-**Action:** create
-**Change:**
-- **Subscriber Group Name Uniqueness**: Non-empty subscriber group names must be unique across all groups. Enforced at the database level. This prevents ambiguous group resolution when auto-assigning new accounts by name.
-
----
-
-## 20260224-1335 | Filter Excel Import by Account Number Starting with 10
-
-**Action:** update
-**Change:**
-- Contract #5 — Update: "Import Auto-Create: When importing a payment, **only rows with an account number starting with '10' are processed.** For these rows, if the `reference_account_number` is unknown, the system auto-creates a new subscriber group and account entry. Rows with account numbers not starting with '10' are silently ignored."
-
----
-
-### 2026-02-17 | Accounts Screen
-
-**Action:** create
-**Change:**
-- **Delete Confirmation**: All destructive delete actions (group, account, payment) must present a confirmation dialog before executing. No silent deletes.
-
----
-
-### System Identity & Boundaries
-
-- Payment consolidation system for 11+ years of Excel-based historical payment records
-
-### Core Invariants
-
-1. **Payment Immutability**: Payment records are never auto-modified or auto-deleted. Only explicit manual user action (edit/delete) can change a payment record. No system process, import, or mapping change may alter existing payment data.
-
-2. **Duplicate Prevention**: A payment is duplicate when the combination of `reference_account_number` + `payment_date` + `amount` already exists. Duplicates must be rejected during import and manual entry. Enforced via composite unique index at database level.
-
-3. **Global Account Uniqueness**: Each `account_number` exists exactly once across all subscriber groups. Enforced via unique constraint at database level.
-
-4. **Dynamic Mapping Resolution**: Account-to-subscriber-group mapping changes immediately affect all searches, reports, and display. Mapping changes never modify stored payment records.
-
-5. **Import Auto-Create**: When importing a payment with an unknown `reference_account_number`, the system auto-creates a new subscriber group and account entry.
-
-
-### Deletion Rules
-
-- **Delete subscriber group**: Cascade deletes all accounts in the group. Never touches payments table.
-- **Delete account**: Removes from group. Payments referencing it remain unchanged (become "unmapped").
-- **Delete payment**: Manual user action only.
-
-### Non-Goals
 
 - Multi-language support (Arabic only)
 - Audit trail or change history
@@ -73,6 +46,4 @@ _(empty — populated after first maintenance)_
 - Cloud sync, backup, or replication
 - Automatic data backup mechanisms
 
-### Open Contract Questions
-
-_(none)_
+## Unprocessed

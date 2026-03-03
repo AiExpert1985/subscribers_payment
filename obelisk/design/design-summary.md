@@ -1,59 +1,28 @@
 # Design Summary
 
-Generated: 2026-02-16
+Generated: 2026-03-03
 
 ## System Architecture
-_(empty — populated after maintenance)_
 
-## Data Model
-_(empty — populated after maintenance)_
-
-## Core Design Principles
-_(empty — populated after maintenance)_
-
-## Modules
-_(empty — populated after maintenance)_
-
-## Open Design Questions
-_(empty — populated after maintenance)_
-
-## Unprocessed
-
-### 20260225-0000 | Log entire file import failures to the console
-
-- Use `debugPrint` for debugging import failures without persisting to a file or UI.
-
----
-
-### 20260224-1335 | Filter Excel Import by Account Number Starting with 10
-
-**Architecture / Design:**
-- Excel import filtering rule: Account numbers must start with '10' (after trimming spaces) to be imported; others are silently skipped.
-
----
-
-### 2026-02-17 | Accounts Screen
-
-**Architecture / Design:**
-- Bottom navigation bar introduced as app-level shell (Payments, Accounts, future Reports)
-- Accounts screen follows feature-first structure under `lib/accounts/`
-- Inline editing for both subscriber names and account numbers (tap to edit)
-
-**Business Logic:**
-- Delete confirmation required for all destructive actions (new contract)
-- Search by account number resolves to containing subscriber group
-
----
-
-### Architectural Decisions
-
-- **Platform**: Flutter desktop application, Windows primary target
-- **Database**: SQLite (local file-based, single-user)
-- **State Management**: Riverpod 3 (latest generation, not legacy)
+- **Platform**: Flutter desktop, Windows primary target
+- **Database**: SQLite, local file-based, single-user (sqflite)
+- **State Management**: Riverpod 3 (FutureProvider, StateProvider)
 - **Routing**: go_router
 - **Language/Layout**: Arabic-only, full RTL layout
+- **Structure**: Feature-first (`lib/payments/`, `lib/accounts/`, `lib/reports/`, `lib/data/`)
+- **Navigation**: Bottom navigation bar as app-level shell (Payments, Accounts, Reports)
 
-### Core Design Principles
+## Data Model
+
+| Table | Key Columns |
+|---|---|
+| `subscriber_groups` | `id` PK, `name` (optional, editable, non-empty values unique) |
+| `accounts` | `id` PK, `account_number` (UNIQUE), `subscriber_group_id` FK |
+| `payments` | `id` PK, `reference_account_number` (no FK), `amount`, `payment_date`, `stamp_number`, `subscriber_name`, `type`, `address` |
+
+`reference_account_number` stored exactly as found in source. Mapping to subscriber groups resolved dynamically at query time — never stored.
+
+## Core Design Principles
 
 1. Payments are immutable historical facts
 2. Account-to-subscriber relationships are dynamic and editable
@@ -62,151 +31,52 @@ _(empty — populated after maintenance)_
 5. System must remain simple, maintainable, and deterministic
 6. No hidden data transformations
 
-### Data Model
+## Modules
 
-**subscriber_groups** — represents one logical subscriber entity
-- `id` (PK, auto-generated)
-- `subscriber_name` (String, optional, editable)
-
-**accounts** — represents account numbers and their grouping
-- `id` (PK, auto-generated)
-- `account_number` (String, UNIQUE, required)
-- `subscriber_group_id` (FK → subscriber_groups.id, required)
-
-**payments** — represents historical payment records
-- `id` (PK, auto-generated)
-- `reference_account_number` (String, required, no FK)
-- `amount` (Decimal, required)
-- `payment_date` (Date, required)
-- `stamp_number` (String, optional)
-- `subscriber_name` (String, optional — preserved from import source)
-- `type` (String, optional)
-
-**Key design**: `reference_account_number` stored exactly as found in source. Mapping to subscriber groups resolved dynamically at query time.
-
-### Modules
-
-**Import Screen**
-- Import payments from structured Excel files
-- Column matching via predefined alias mapping (account, amount, date, stamp, subscriber name)
-- Auto-create subscriber group + account for unknown account numbers
-- Duplicate detection during import
+**Import** (integrated into Payments screen)
+- Excel file import: multi-file, multi-tab, column alias matching
+- Required columns: account_number, amount, date; optional: subscriber_name, stamp_number, type, address
+- Filter: only account numbers starting with '10' (after trim) are processed; others silently skipped
+- Auto-assign unknown accounts to groups by exact subscriber name match; create new group if no match
+- Duplicate detection on (reference_account_number, payment_date, amount)
+- Parse runs in background isolate; DB inserts in 10,000-row chunks to avoid event-loop blocking
+- Progress via `debugPrint` only; file-level failures logged with `debugPrint`
 
 **Payments Screen**
-- Table view: reference account, resolved subscriber name, amount, date, stamp number
-- Live multi-column search (AND logic, ignore empty fields)
-- Account number search includes all accounts in same group
-- Manual CRUD operations (add, edit, delete)
-- Date range filter
-- Print and export filtered view to Excel
+- Server-side paginated table: 20 rows/page; pagination shows "من X إلى Y" with first/prev/next/last
+- Multi-column search (AND logic, positionally coupled to columns): account, subscriber name, amount, date range, stamp, type, address
+- X reset button: `SizedBox(36px, child: condition ? Icons.close red : null)` — first child (visual right)
+- Action bar: import/export (first = far right), add-payment (last = far left)
+- Inline tap-to-edit for all fields; delete with confirmation (last child = visual left)
+- Export: full filtered dataset (not page-only) via file_picker save dialog
 
 **Accounts Screen**
-- Table-like list: each row = one subscriber group
-- Shows subscriber name + inline account numbers (tags/pills)
-- Group-level: add group (subscriber name only, auto-assigns ID), delete group (cascades to accounts)
-- Account-level: add account to group, edit account number, delete account
-- Search by account number → shows containing group
-- Hover controls for edit/delete on account elements
+- Server-side paginated list: 20 rows/page; "من X إلى Y" display
+- Dual filter: subscriber name + account number (both server-side LIKE queries)
+- X reset button as first child (visual right); appears only when a filter is active
+- Each row: # number, subscriber name (inline editable), account chips (uniform 130px), delete (last child = visual left)
+- No hover pen/edit icon — inline tap-to-edit only
+- Account chips 130px wide for stable layout across pages
+- Delete group cascades to accounts; delete confirmation always required
+- New DB methods: `getSubscriberGroupsPaginated`, `getTotalSubscriberGroupCount`
+- New providers: `currentAccountPageProvider`, `accountNameSearchQueryProvider`, `accountSearchQueryProvider`, `totalAccountGroupsProvider`, `totalAccountPagesProvider`
 
 **Reports Screen**
-- Input: account number + date range (default: all time)
-- Resolves group → fetches all accounts in group → fetches all matching payments
-- Header: subscriber name, all account numbers, period, total amount
-- Body: detailed payments table
-- Footer: generated date/time
-- Print capability
-- Error "account not found" if account doesn't exist
+- Input: account number + optional date range; all in one row with X reset (first child = visual right)
+- Lookup: account → subscriber group → all accounts in group → all matching payments
+- Display: subscriber name, all account numbers, period, total amount, payments table
+- PDF print: `pw.MultiPage(textDirection: pw.TextDirection.rtl)`; `pw.Row` has no textDirection param — RTL achieved by reversing children manually; table columns reversed for RTL reading order
 
-### UX Philosophy
+## UX Patterns
 
-- Arabic-only RTL interface
-- Clean, compact layout
-- Inline editing where appropriate
-- Live filtering for instant feedback
-- Minimal clutter — hover-reveal controls
+- **RTL Row Rule**: First child = rightmost on screen; last child = leftmost. Consistently applied: delete = last child; X reset and import/export = first children.
+- **X Reset Button**: `SizedBox(width: fixedWidth, child: condition ? button : null)` — always reserves width, preventing layout shift on toggle.
+- **Inline editing**: Tap-to-edit on all editable fields; no separate edit icons anywhere.
+- **Pagination**: 20 rows/page, "من X إلى Y" range label, first/prev/next/last buttons.
+- **Container color rule**: Flutter `Container` cannot combine `color:` and `decoration:` — color must be inside `BoxDecoration`.
 
-### Open Design Questions
+## Open Design Questions
 
 _(none)_
 
-## 2026-02-17 | Payments Screen with Excel Import
-
-**Architecture / Design:**
-- Import is integrated into Payments screen (button), not a separate module
-- subscriber_name in payments table is standalone, not resolved from subscriber_groups — payments are self-contained historical records
-- Pagination with server-side queries for 100k+ record performance
-
-**Business Logic:**
-- Excel file is "successful" if it contains the 3 key columns (account_number, amount, date) via alias matching; other columns (subscriber_name, stamp_number) are optional
-- Multi-file and multi-tab (worksheet) import supported
-- File success is per-file: one successful tab makes the file successful
-
----
-## 2026-02-17 | Implement Reports Screen With Navigation and Printing
-
-**Architecture / Design (if applicable):**
-- Reports is introduced as a first-class app module/screen and wired into app-level navigation.
-- Report input UX is fixed: one account number field, then from/to date fields, then generate action.
-- Printed output must mirror the on-screen report data.
-
-**Business Logic (if applicable):**
-- Report lookup starts from account number; missing account returns a clear "user not found" failure state.
-- If account exists, resolve its subscriber group and include payments for all accounts in that group.
-- Empty from/to dates mean all-time period.
-- Subscriber display name in reports is sourced from current subscriber group mapping (`subscriber_groups.name`).
-
----
-## 2026-02-18 | Payments Screen Export to Excel
-
-**Architecture / Design:**
-- Export scope is all filtered records (full dataset, not current page only)
-- Save path determined by user via `file_picker.saveFile()` dialog
-- Uses existing `excel` package for writing; no new dependencies introduced
-- Export action lives in the payments feature module
-
----
-## 20260219 | Auto-assign new accounts to existing subscriber groups by name match
-
-**Business Logic:**
-- Lookup order for unknown account: (1) exact-match existing group by non-empty subscriber name → assign account there; (2) no match or empty name → create new group as before.
-- Non-empty subscriber group names are unique at DB level (partial unique index on `subscriber_groups.name WHERE name != ''`).
-- DB schema version incremented; migration adds the partial unique index.
-
----
-
-## 20260218-1038 | Improve Payments Screen Layout, Interaction, and Data Fields
-
-**Architecture / Design:**
-- Inline edit-on-click is now the unified UX pattern for all app screens — no separate edit icon; clicking any field activates inline editing (established here, to be applied to other screens in future tasks)
-- Search fields are positionally coupled to their columns (rendered above the column header, matching column width) rather than in a separate filter bar
-- Date filter splits into two date-picker fields (from / to) rendered side-by-side, collapsing to vertical stack on narrow widths
-- Row numbers are global sequence (not per-page restart), computed from page offset + local index
-- payments table column `address TEXT` added; DB version incremented to 3
-
-**Business Logic:**
-- `type` and `address` are optional (nullable) — not part of duplicate detection constraint
-- `address` DB migration increments schema version; existing records receive NULL
-- Import alias mapping extended to recognise `type` and `address` column headers from Excel source files
-
----
-
-## 20260225-0937 | Update Import Headers, Add yyyyMMDD Date Format, Fix Filter Heights
-
-- Import date parsing extended to support compact yyyyMMDD format (e.g., 20191029).
-- Payment filter fields use uniform visual height through consistent padding/density settings.
-
----
-
-## 20260225-1200 | Optimize Excel Import Performance for Large Files
-
-**Date:** 2026-02-25
-- Import pipeline runs Excel parsing in a background isolate; DB inserts use sqflite Batch in 500-row chunks with optional progress callback.
-
----
-
-## 20260302-0000 | Fix Excel Import Freeze and Add Console Progress Logging
-
-**Date:** 2026-03-02
-- DB batch inserts are chunked at 10,000 rows per commit (previously one commit for the entire file) to prevent event-loop blocking on large imports.
-
----
+## Unprocessed
