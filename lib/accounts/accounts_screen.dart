@@ -92,11 +92,15 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
       child: Wrap(
         spacing: 12,
         children: [
-          FilledButton.icon(
-            onPressed: _importAccounts,
-            icon: const Icon(Icons.upload_file),
-            label: const Text('استيراد حسابات'),
-            style: FilledButton.styleFrom(backgroundColor: Colors.teal),
+          Tooltip(
+            message:
+                'استيراد ملف اكسل بالأعمدة: الحساب القديم، الحساب الجديد، اسم المشترك',
+            child: FilledButton.icon(
+              onPressed: _importAccounts,
+              icon: const Icon(Icons.upload_file),
+              label: const Text('استيراد حسابات'),
+              style: FilledButton.styleFrom(backgroundColor: Colors.teal),
+            ),
           ),
           FilledButton.icon(
             onPressed: _addGroup,

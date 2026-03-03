@@ -30,7 +30,7 @@ Non-empty subscriber group names must be unique across all groups. Enforced at d
 All destructive delete actions (group, account, payment) must present a confirmation dialog before executing. No silent deletes.
 
 **8. Account Import (Accounts screen only)**
-An Excel file with columns `الحساب القديم` / `الحساب الجديد` can be imported from the Accounts screen. For each row: if the old account exists in the DB, the new account is added to the same subscriber group. Rows where the old account is not found, the new account already exists, or cell values are invalid are skipped. All skipped rows are collected and shown in a result dialog with an option to export them to Excel (columns: الحساب القديم, الحساب الجديد, السبب).
+An Excel file with columns `الحساب القديم` / `الحساب الجديد` and an optional `اسم المشترك` can be imported from the Accounts screen. For each row: if the old account exists in the DB, the new account is added to the same subscriber group. If `اسم المشترك` is present and non-empty, the subscriber group's name is overwritten with that value (regardless of any existing name). A blank/missing name cell leaves the group name unchanged. Rows where the old account is not found, the new account already exists, or required cell values are invalid are skipped. All skipped rows are collected and shown in a result dialog with an option to export them to Excel (columns: الحساب القديم, الحساب الجديد, السبب).
 
 **Deletion Rules:**
 - Delete subscriber group: Cascade deletes all accounts in the group. Never touches payments table.

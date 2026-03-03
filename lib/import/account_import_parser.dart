@@ -3,7 +3,12 @@ import 'package:excel/excel.dart';
 import 'package:flutter/foundation.dart';
 
 /// A valid parsed row: both account numbers are present and positive integers.
-typedef AccountImportRow = ({int oldAccount, int newAccount});
+/// [subscriberName] is optional — null if the column was absent or cell blank.
+typedef AccountImportRow = ({
+  int oldAccount,
+  int newAccount,
+  String? subscriberName,
+});
 
 /// Result of parsing an account-mapping Excel file.
 class AccountImportParseResult {
@@ -18,10 +23,11 @@ class AccountImportParseResult {
 }
 
 /// Parses an Excel file with two required columns:
-/// "الحساب القديم" (old account) and "الحساب الجديد" (new account).
+/// "الحساب القديم" (old account) and "الحساب الجديد" (new account),
+/// and one optional column: "اسم المشترك" (subscriber name).
 ///
 /// Header matching is case-insensitive and whitespace-trimmed.
-/// Rows with invalid or missing values are skipped (collected as errors).
+/// Rows with invalid or missing required values are skipped (collected as errors).
 class AccountImportParser {
   // Recognised header aliases — extend as needed.
   static const _oldAliases = [
@@ -36,6 +42,7 @@ class AccountImportParser {
     'new account',
     'new',
   ];
+  static const _nameAliases = ['اسم المشترك', 'subscriber name', 'name'];
 
   AccountImportParseResult parseFile(String filePath) {
     final fileName = filePath.split(Platform.pathSeparator).last;
@@ -63,7 +70,10 @@ class AccountImportParser {
 
       if (oldIdx == null || newIdx == null) continue; // try next sheet
 
-      return _parseSheet(sheetRows, oldIdx, newIdx);
+      // Name column is optional — null if not present.
+      final nameIdx = _findColumnIndex(sheetRows.first, _nameAliases);
+
+      return _parseSheet(sheetRows, oldIdx, newIdx, nameIdx);
     }
 
     return AccountImportParseResult(
@@ -78,6 +88,7 @@ class AccountImportParser {
     List<List<Data?>> sheetRows,
     int oldIdx,
     int newIdx,
+    int? nameIdx,
   ) {
     final rows = <AccountImportRow>[];
     final errors = <String>[];
@@ -92,7 +103,14 @@ class AccountImportParser {
         continue;
       }
 
-      rows.add((oldAccount: oldRaw, newAccount: newRaw));
+      // Name is optional; blank/missing → null (no-op on group name).
+      final nameRaw = nameIdx != null ? _cellStringOrNull(row, nameIdx) : null;
+
+      rows.add((
+        oldAccount: oldRaw,
+        newAccount: newRaw,
+        subscriberName: nameRaw,
+      ));
     }
 
     return AccountImportParseResult(rows: rows, errors: errors);
@@ -122,6 +140,15 @@ class AccountImportParser {
       ),
       _ => int.tryParse(cell.value.toString().trim()),
     };
+  }
+
+  /// Extracts a non-empty trimmed string from a cell, or null if blank/absent.
+  String? _cellStringOrNull(List<Data?> row, int index) {
+    if (index >= row.length) return null;
+    final cell = row[index];
+    if (cell == null) return null;
+    final text = _cellText(cell).trim();
+    return text.isEmpty ? null : text;
   }
 
   /// Extracts text from a header cell for alias matching.

@@ -59,7 +59,7 @@ Generated: 2026-03-03
 - Delete group cascades to accounts; delete confirmation always required
 - New DB methods: `getSubscriberGroupsPaginated`, `getTotalSubscriberGroupCount`
 - New providers: `currentAccountPageProvider`, `accountNameSearchQueryProvider`, `accountSearchQueryProvider`, `totalAccountGroupsProvider`, `totalAccountPagesProvider`
-- **Import Accounts**: "استيراد حسابات" button in action bar; parses Excel with `الحساب القديم` / `الحساب الجديد` columns; adds new account to same group as old account; shows result dialog with success count + error table; errors exportable to Excel via file_picker save dialog
+- **Import Accounts**: "استيراد حسابات" button in action bar (with tooltip: column list); parses Excel with `الحساب القديم` / `الحساب الجديد` / optional `اسم المشترك`; if name non-empty, overwrites subscriber group name; adds new account to same group; shows result dialog with success count + error table; errors exportable to Excel via file_picker save dialog
 
 **Reports Screen**
 - Input: account number + optional date range; all in one row with X reset (first child = visual right)

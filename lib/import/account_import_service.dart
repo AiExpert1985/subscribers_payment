@@ -30,6 +30,7 @@ class AccountImportResult {
 /// - Old account must already exist in DB; otherwise skipped with error.
 /// - New account must not already exist anywhere; otherwise skipped with error.
 /// - On success: new account is inserted into the same group as old account.
+/// - If اسم المشترك is non-empty: the subscriber group name is overwritten.
 class AccountImportService {
   final DatabaseService _db;
 
@@ -65,6 +66,11 @@ class AccountImportService {
           ),
         );
         continue;
+      }
+
+      // Update group name if provided and non-empty.
+      if (row.subscriberName != null && row.subscriberName!.isNotEmpty) {
+        await _db.updateSubscriberGroup(groupId, {'name': row.subscriberName});
       }
 
       final newExists = await _db.getGroupIdByAccountNumber(row.newAccount);
