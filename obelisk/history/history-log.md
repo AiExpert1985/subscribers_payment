@@ -85,3 +85,9 @@
 Three targeted UI fixes: account chips widened 130→160px for longer numbers; PDF report header centered and info lines converted to single centered RTL text lines; Accounts screen gained static column headers (#, اسم المشترك, ارقام الحساب) aligned to row layout.
 
 ---
+
+## 20260303-1226 | Payment / Subscriber Full Separation | TASK
+
+Fully decoupled payments from subscribers. Removed auto-creation of accounts/groups from payment import (eliminating N×3 per-account DB round-trips). Added "Import Accounts" to the Accounts screen: Excel with old→new account columns maps new accounts onto existing groups, with a result dialog showing success count + error table exportable to Excel. Contract 5 replaced with "Payment Isolation"; Contract 8 added for Account Import.
+
+---

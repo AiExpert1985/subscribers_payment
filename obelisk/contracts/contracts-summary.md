@@ -20,18 +20,17 @@ Each `account_number` exists exactly once across all subscriber groups. Enforced
 **4. Dynamic Mapping Resolution**
 Account-to-subscriber-group mapping changes immediately affect all searches, reports, and display. Mapping changes never modify stored payment records.
 
-**5. Account Auto-Assign** _(supersedes original Import Auto-Create)_
-When a payment is added (via import or manual entry) with an unknown `reference_account_number`:
-- The system first searches for an existing subscriber group whose name exactly matches the payment's subscriber name.
-- If a match is found, the new account is added to that group.
-- If no match is found (or subscriber name is empty), a new subscriber group is created.
-- **Import-only constraint**: Only rows with an account number starting with '10' (after trimming spaces) are processed during Excel import. Rows with other prefixes are silently ignored.
+**5. Payment Isolation**
+Payment import and manual payment entry store `reference_account_number` as a raw fact only. No account or subscriber group is ever created, modified, or looked up during any payment operation. Payments and subscribers are fully decoupled in both directions.
 
 **6. Subscriber Group Name Uniqueness**
 Non-empty subscriber group names must be unique across all groups. Enforced at database level via partial unique index (`WHERE name != ''`). Prevents ambiguous group resolution during auto-assign.
 
 **7. Delete Confirmation**
 All destructive delete actions (group, account, payment) must present a confirmation dialog before executing. No silent deletes.
+
+**8. Account Import (Accounts screen only)**
+An Excel file with columns `الحساب القديم` / `الحساب الجديد` can be imported from the Accounts screen. For each row: if the old account exists in the DB, the new account is added to the same subscriber group. Rows where the old account is not found, the new account already exists, or cell values are invalid are skipped. All skipped rows are collected and shown in a result dialog with an option to export them to Excel (columns: الحساب القديم, الحساب الجديد, السبب).
 
 **Deletion Rules:**
 - Delete subscriber group: Cascade deletes all accounts in the group. Never touches payments table.
@@ -47,3 +46,10 @@ All destructive delete actions (group, account, payment) must present a confirma
 - Automatic data backup mechanisms
 
 ## Unprocessed
+
+## 20260303-1226 | Payment / Subscriber Full Separation
+
+- Contract 5 (Account Auto-Assign) replaced by Contract 5 (Payment Isolation): payment import and manual entry never create or modify accounts/groups.
+- Contract 8 added (Account Import): Excel-based old→new account mapping via Accounts screen only; old must exist, new must not; failures reported + exportable.
+
+---

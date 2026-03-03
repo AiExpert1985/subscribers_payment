@@ -37,10 +37,9 @@ Generated: 2026-03-03
 - Excel file import: multi-file, multi-tab, column alias matching
 - Required columns: account_number, amount, date; optional: subscriber_name, stamp_number, type, address
 - Filter: only account numbers starting with '10' (after trim) are processed; others silently skipped
-- Auto-assign unknown accounts to groups by exact subscriber name match; create new group if no match
 - Duplicate detection on (reference_account_number, payment_date, amount)
 - Parse runs in background isolate; DB inserts in 10,000-row chunks to avoid event-loop blocking
-- Progress via `debugPrint` only; file-level failures logged with `debugPrint`
+- No account or group creation — payments are stored as raw facts only
 
 **Payments Screen**
 - Server-side paginated table: 20 rows/page; pagination shows "من X إلى Y" with first/prev/next/last
@@ -60,6 +59,7 @@ Generated: 2026-03-03
 - Delete group cascades to accounts; delete confirmation always required
 - New DB methods: `getSubscriberGroupsPaginated`, `getTotalSubscriberGroupCount`
 - New providers: `currentAccountPageProvider`, `accountNameSearchQueryProvider`, `accountSearchQueryProvider`, `totalAccountGroupsProvider`, `totalAccountPagesProvider`
+- **Import Accounts**: "استيراد حسابات" button in action bar; parses Excel with `الحساب القديم` / `الحساب الجديد` columns; adds new account to same group as old account; shows result dialog with success count + error table; errors exportable to Excel via file_picker save dialog
 
 **Reports Screen**
 - Input: account number + optional date range; all in one row with X reset (first child = visual right)
@@ -88,5 +88,15 @@ _(none)_
 - PDF `_pdfLine`: replaced 2-column Row layout with `pw.Center(pw.Text('$title: $value', textAlign: center, textDirection: rtl))`
 - PDF table: columns in natural order (رقم الحساب → رقم الختم); `cellAlignment` and `headerAlignment` → `pw.Alignment.center`
 - PDF header: wrapped in `pw.Center`
+
+---
+
+## 20260303-1226 | Payment / Subscriber Full Separation
+
+- `ImportService` strip: removed account-collection loop and `findOrCreateAccountAndGroup` calls; payment import is now parse → batch-insert only
+- New `AccountImportParser`: same alias-matching pattern as `ExcelParser`; 2-column Excel (old/new account numbers)
+- New `AccountImportService`: plain class injected with `DatabaseService`; error model carries `oldAccount?`, `newAccount?`, `reason` (Arabic string) used for both dialog display and Excel export
+- Excel error export uses existing `excel` package + `FilePicker.saveFile`; `excel.Border` conflict resolved with `hide Border` on import
+- `_TableCell` defined as a private file-level widget (not inside state class) to support `const` in table children
 
 ---

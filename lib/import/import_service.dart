@@ -73,38 +73,10 @@ class ImportService {
         '[Import] [$fileName] Parse complete: ${parseResult.rows.length} rows (${fileWatch.elapsedMilliseconds}ms)',
       );
 
-      // Collect unique account numbers and their subscriber names
-      onProgress?.call('جاري معالجة الحسابات...');
-      final accountNumbers = <int>{};
-      final accountNames = <int, String?>{};
-      for (final row in parseResult.rows) {
-        final accNum = row['reference_account_number'] as int;
-        if (accountNumbers.add(accNum)) {
-          accountNames[accNum] = row['subscriber_name'] as String?;
-        }
-      }
-
-      debugPrint(
-        '[Import] [$fileName] Processing ${accountNumbers.length} unique accounts (${fileWatch.elapsedMilliseconds}ms)',
-      );
-
-      // Load all existing accounts in one query, then create only missing ones
-      final existing = await _db.getExistingAccountNumbers(accountNumbers);
-      for (final accNum in accountNumbers) {
-        if (!existing.contains(accNum)) {
-          await _db.findOrCreateAccountAndGroup(
-            accNum,
-            subscriberName: accountNames[accNum],
-          );
-        }
-      }
-
-      debugPrint(
-        '[Import] [$fileName] Accounts ready (${fileWatch.elapsedMilliseconds}ms)',
-      );
-
       // Notify user that parsing is done and saving is starting
-      onProgress?.call('تم قراءة ${parseResult.rows.length} سجل — جاري الحفظ...');
+      onProgress?.call(
+        'تم قراءة ${parseResult.rows.length} سجل — جاري الحفظ...',
+      );
       debugPrint(
         '[Import] [$fileName] DB save started: ${parseResult.rows.length} rows (${fileWatch.elapsedMilliseconds}ms)',
       );

@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:excel/excel.dart' hide Border;
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +9,7 @@ import '../data/database_service.dart';
 import '../data/models/account.dart';
 import '../data/models/subscriber_group.dart';
 import '../data/providers.dart';
+import '../import/account_import_service.dart';
 import 'accounts_providers.dart';
 
 /// Accounts screen: manage subscriber groups and their account numbers.
@@ -69,10 +73,8 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
             Expanded(
               child: groupsAsync.when(
                 data: (groups) => _buildGroupsList(groups, currentPage),
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
-                error: (error, _) =>
-                    Center(child: Text('خطأ: $error')),
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (error, _) => Center(child: Text('خطأ: $error')),
               ),
             ),
             const SizedBox(height: 8),
@@ -87,10 +89,21 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
 
   Widget _buildActionBar() {
     return Center(
-      child: FilledButton.icon(
-        onPressed: _addGroup,
-        icon: const Icon(Icons.person_add),
-        label: const Text('إضافة مشترك'),
+      child: Wrap(
+        spacing: 12,
+        children: [
+          FilledButton.icon(
+            onPressed: _importAccounts,
+            icon: const Icon(Icons.upload_file),
+            label: const Text('استيراد حسابات'),
+            style: FilledButton.styleFrom(backgroundColor: Colors.teal),
+          ),
+          FilledButton.icon(
+            onPressed: _addGroup,
+            icon: const Icon(Icons.person_add),
+            label: const Text('إضافة مشترك'),
+          ),
+        ],
       ),
     );
   }
@@ -112,8 +125,10 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
                   onPressed: _resetFilters,
                   tooltip: 'مسح التصفية',
                   padding: EdgeInsets.zero,
-                  constraints:
-                      const BoxConstraints(minWidth: 32, minHeight: 32),
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
+                  ),
                 )
               : null,
         ),
@@ -269,10 +284,7 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
                 child: Center(
                   child: Text(
                     '$rowNumber',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey.shade500,
-                    ),
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
                   ),
                 ),
               ),
@@ -337,8 +349,7 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
             fontSize: 13,
             fontWeight: FontWeight.w500,
             color: group.name.isEmpty ? Colors.grey : null,
-            fontStyle:
-                group.name.isEmpty ? FontStyle.italic : FontStyle.normal,
+            fontStyle: group.name.isEmpty ? FontStyle.italic : FontStyle.normal,
           ),
           overflow: TextOverflow.ellipsis,
         ),
@@ -402,8 +413,7 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
         label: SizedBox(
           width: double.infinity,
           child: InkWell(
-            onTap: () =>
-                _startEdit(editKey, account.accountNumber.toString()),
+            onTap: () => _startEdit(editKey, account.accountNumber.toString()),
             child: Text(
               account.accountNumber.toString(),
               style: const TextStyle(fontSize: 13),
@@ -468,10 +478,8 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
       data: (totalPages) => totalCountAsync.when(
         data: (totalCount) {
           final pageSize = DatabaseService.defaultPageSize;
-          final startRow =
-              totalCount == 0 ? 0 : currentPage * pageSize + 1;
-          final endRow =
-              ((currentPage + 1) * pageSize).clamp(0, totalCount);
+          final startRow = totalCount == 0 ? 0 : currentPage * pageSize + 1;
+          final endRow = ((currentPage + 1) * pageSize).clamp(0, totalCount);
 
           return Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -479,9 +487,9 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
               IconButton(
                 icon: const Icon(Icons.first_page),
                 onPressed: currentPage > 0
-                    ? () => ref
-                          .read(currentAccountPageProvider.notifier)
-                          .state = 0
+                    ? () =>
+                          ref.read(currentAccountPageProvider.notifier).state =
+                              0
                     : null,
                 tooltip: 'الصفحة الأولى',
               ),
@@ -489,7 +497,7 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
                 icon: const Icon(Icons.chevron_left),
                 onPressed: currentPage > 0
                     ? () =>
-                        ref.read(currentAccountPageProvider.notifier).state--
+                          ref.read(currentAccountPageProvider.notifier).state--
                     : null,
                 tooltip: 'السابق',
               ),
@@ -503,16 +511,16 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
                 icon: const Icon(Icons.chevron_right),
                 onPressed: currentPage < totalPages - 1
                     ? () =>
-                        ref.read(currentAccountPageProvider.notifier).state++
+                          ref.read(currentAccountPageProvider.notifier).state++
                     : null,
                 tooltip: 'التالي',
               ),
               IconButton(
                 icon: const Icon(Icons.last_page),
                 onPressed: currentPage < totalPages - 1
-                    ? () => ref
-                          .read(currentAccountPageProvider.notifier)
-                          .state = totalPages - 1
+                    ? () =>
+                          ref.read(currentAccountPageProvider.notifier).state =
+                              totalPages - 1
                     : null,
                 tooltip: 'الصفحة الأخيرة',
               ),
@@ -600,6 +608,182 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
   }
 
   // ─── Add / Delete Actions ────────────────────────────────────────
+
+  Future<void> _importAccounts() async {
+    final picked = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['xlsx', 'xls'],
+      dialogTitle: 'اختر ملف الحسابات',
+    );
+    if (picked == null || picked.files.isEmpty) return;
+    final filePath = picked.files.first.path;
+    if (filePath == null) return;
+
+    if (!mounted) return;
+    // Show progress
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const AlertDialog(
+        content: Row(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 16),
+            Text('جاري استيراد الحسابات...'),
+          ],
+        ),
+      ),
+    );
+
+    final db = ref.read(databaseServiceProvider);
+    final result = await AccountImportService(db).importFile(filePath);
+
+    if (!mounted) return;
+    Navigator.of(context).pop(); // close progress dialog
+
+    ref.invalidate(subscriberGroupsProvider);
+    ref.invalidate(totalAccountGroupsProvider);
+
+    _showImportResultDialog(result);
+  }
+
+  void _showImportResultDialog(AccountImportResult result) {
+    final realErrors = result.errors
+        .where((e) => e.oldAccount != null || e.newAccount != null)
+        .toList();
+    final parseErrors = result.errors
+        .where((e) => e.oldAccount == null && e.newAccount == null)
+        .toList();
+
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('نتيجة الاستيراد'),
+        content: SizedBox(
+          width: 480,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'تم إضافة ${result.inserted} حساب بنجاح',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              if (parseErrors.isNotEmpty)
+                ...parseErrors.map(
+                  (e) => Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      e.reason,
+                      style: const TextStyle(color: Colors.red, fontSize: 13),
+                    ),
+                  ),
+                ),
+              if (realErrors.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(
+                  '${realErrors.length} سجل بها مشاكل:',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  constraints: const BoxConstraints(maxHeight: 240),
+                  child: SingleChildScrollView(
+                    child: Table(
+                      border: TableBorder.all(
+                        color: Colors.grey.shade300,
+                        width: 0.5,
+                      ),
+                      columnWidths: const {
+                        0: FlexColumnWidth(1),
+                        1: FlexColumnWidth(1),
+                        2: FlexColumnWidth(2),
+                      },
+                      children: [
+                        TableRow(
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                          ),
+                          children: const [
+                            _TableCell(text: 'الحساب القديم', isHeader: true),
+                            _TableCell(text: 'الحساب الجديد', isHeader: true),
+                            _TableCell(text: 'السبب', isHeader: true),
+                          ],
+                        ),
+                        for (final e in realErrors)
+                          TableRow(
+                            children: [
+                              _TableCell(text: e.oldAccount?.toString() ?? '-'),
+                              _TableCell(text: e.newAccount?.toString() ?? '-'),
+                              _TableCell(text: e.reason),
+                            ],
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          if (realErrors.isNotEmpty)
+            TextButton.icon(
+              icon: const Icon(Icons.download),
+              label: const Text('تصدير الأخطاء'),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                _exportErrorsToExcel(realErrors);
+              },
+            ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('موافق'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _exportErrorsToExcel(List<AccountImportError> errors) async {
+    final excel = Excel.createExcel();
+    final sheet = excel['الأخطاء'];
+    excel.delete('Sheet1'); // remove default blank sheet
+
+    // Header row
+    sheet.appendRow([
+      TextCellValue('الحساب القديم'),
+      TextCellValue('الحساب الجديد'),
+      TextCellValue('السبب'),
+    ]);
+
+    for (final e in errors) {
+      sheet.appendRow([
+        e.oldAccount != null ? IntCellValue(e.oldAccount!) : TextCellValue('-'),
+        e.newAccount != null ? IntCellValue(e.newAccount!) : TextCellValue('-'),
+        TextCellValue(e.reason),
+      ]);
+    }
+
+    final encoded = excel.encode();
+    if (encoded == null) return;
+
+    // Build a default file name suggestion
+    final defaultName =
+        'account_import_errors_${DateTime.now().millisecondsSinceEpoch}.xlsx';
+    final tempFile = File('${Directory.systemTemp.path}/$defaultName');
+    await tempFile.writeAsBytes(encoded);
+
+    final savePath = await FilePicker.platform.saveFile(
+      dialogTitle: 'حفظ ملف الأخطاء',
+      fileName: defaultName,
+      type: FileType.custom,
+      allowedExtensions: ['xlsx'],
+    );
+
+    if (savePath == null) return;
+    await tempFile.copy(savePath);
+  }
 
   Future<void> _addGroup() async {
     final db = ref.read(databaseServiceProvider);
@@ -699,5 +883,27 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
     final db = ref.read(databaseServiceProvider);
     await db.deleteAccount(account.id!);
     ref.invalidate(subscriberGroupsProvider);
+  }
+}
+
+/// Reusable table cell for the import result error table.
+class _TableCell extends StatelessWidget {
+  final String text;
+  final bool isHeader;
+
+  const _TableCell({required this.text, this.isHeader = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: isHeader ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+    );
   }
 }

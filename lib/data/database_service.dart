@@ -145,8 +145,7 @@ class DatabaseService {
       args.add('%$accountQuery%');
     }
 
-    final where =
-        conditions.isEmpty ? '' : 'WHERE ${conditions.join(' AND ')}';
+    final where = conditions.isEmpty ? '' : 'WHERE ${conditions.join(' AND ')}';
     args.addAll([pageSize, page * pageSize]);
 
     return await db.rawQuery(
@@ -178,8 +177,7 @@ class DatabaseService {
       args.add('%$accountQuery%');
     }
 
-    final where =
-        conditions.isEmpty ? '' : 'WHERE ${conditions.join(' AND ')}';
+    final where = conditions.isEmpty ? '' : 'WHERE ${conditions.join(' AND ')}';
     final result = await db.rawQuery(
       'SELECT COUNT(*) as count FROM $tableSubscriberGroups sg $where',
       args.isEmpty ? null : args,
@@ -304,8 +302,10 @@ class DatabaseService {
     const chunkSize = 10000;
 
     final before =
-        (await db.rawQuery('SELECT COUNT(*) as c FROM $tablePayments'))
-            .first['c'] as int;
+        (await db.rawQuery(
+              'SELECT COUNT(*) as c FROM $tablePayments',
+            )).first['c']
+            as int;
 
     for (int i = 0; i < payments.length; i += chunkSize) {
       final end = (i + chunkSize).clamp(0, payments.length);
@@ -323,8 +323,10 @@ class DatabaseService {
     }
 
     final after =
-        (await db.rawQuery('SELECT COUNT(*) as c FROM $tablePayments'))
-            .first['c'] as int;
+        (await db.rawQuery(
+              'SELECT COUNT(*) as c FROM $tablePayments',
+            )).first['c']
+            as int;
     return after - before;
   }
 
@@ -465,6 +467,20 @@ class DatabaseService {
 
   // ─── Import Helpers ──────────────────────────────────────────────
 
+  /// Returns the subscriber_group_id for [accountNumber], or null if not found.
+  Future<int?> getGroupIdByAccountNumber(int accountNumber) async {
+    final db = await database;
+    final rows = await db.query(
+      tableAccounts,
+      columns: ['subscriber_group_id'],
+      where: 'account_number = ?',
+      whereArgs: [accountNumber],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return rows.first['subscriber_group_id'] as int;
+  }
+
   /// Returns the subset of [accountNumbers] that already exist in the accounts table.
   /// Queries in chunks of 900 to stay within SQLite variable limits.
   Future<Set<int>> getExistingAccountNumbers(Set<int> accountNumbers) async {
@@ -512,10 +528,7 @@ class DatabaseService {
 
   /// Returns the ID of an existing group matching [subscriberName] exactly,
   /// or creates a new group if no match is found (or name is empty/null).
-  Future<int> _resolveOrCreateGroup(
-    Database db,
-    String? subscriberName,
-  ) async {
+  Future<int> _resolveOrCreateGroup(Database db, String? subscriberName) async {
     if (subscriberName != null && subscriberName.isNotEmpty) {
       final matches = await db.query(
         tableSubscriberGroups,
