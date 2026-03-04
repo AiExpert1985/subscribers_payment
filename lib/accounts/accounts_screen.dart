@@ -99,7 +99,6 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
               onPressed: _importAccounts,
               icon: const Icon(Icons.upload_file),
               label: const Text('استيراد حسابات'),
-              style: FilledButton.styleFrom(backgroundColor: Colors.teal),
             ),
           ),
           FilledButton.icon(

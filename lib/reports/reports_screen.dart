@@ -527,6 +527,11 @@ class _DateField extends StatelessWidget {
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 12,
+          ),
           suffixIcon: value == null
               ? const Icon(Icons.date_range_outlined)
               : IconButton(onPressed: onClear, icon: const Icon(Icons.clear)),

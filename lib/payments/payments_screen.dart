@@ -249,8 +249,10 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
                     onPressed: _resetFilters,
                     tooltip: 'مسح التصفية',
                     padding: EdgeInsets.zero,
-                    constraints:
-                        const BoxConstraints(minWidth: 32, minHeight: 32),
+                    constraints: const BoxConstraints(
+                      minWidth: 32,
+                      minHeight: 32,
+                    ),
                   )
                 : null,
           ),
@@ -576,8 +578,10 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
     return Tooltip(
       message: 'تعديل',
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: () => _startEdit(cellKey, displayValue),
         child: Container(
+          constraints: const BoxConstraints(minHeight: 36),
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
           alignment: AlignmentDirectional.centerStart,
           child: Text(
@@ -729,8 +733,7 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
               IconButton(
                 icon: const Icon(Icons.first_page),
                 onPressed: currentPage > 0
-                    ? () =>
-                        ref.read(currentPageProvider.notifier).state = 0
+                    ? () => ref.read(currentPageProvider.notifier).state = 0
                     : null,
                 tooltip: 'الصفحة الأولى',
               ),
@@ -757,9 +760,8 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
               IconButton(
                 icon: const Icon(Icons.last_page),
                 onPressed: currentPage < totalPages - 1
-                    ? () => ref
-                          .read(currentPageProvider.notifier)
-                          .state = totalPages - 1
+                    ? () => ref.read(currentPageProvider.notifier).state =
+                          totalPages - 1
                     : null,
                 tooltip: 'الصفحة الأخيرة',
               ),

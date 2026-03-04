@@ -91,3 +91,9 @@ Three targeted UI fixes: account chips widened 130→160px for longer numbers; P
 Fully decoupled payments from subscribers. Removed auto-creation of accounts/groups from payment import (eliminating N×3 per-account DB round-trips). Added "Import Accounts" to the Accounts screen: Excel with old→new account columns maps new accounts onto existing groups, with a result dialog showing success count + error table exportable to Excel. Contract 5 replaced with "Payment Isolation"; Contract 8 added for Account Import.
 
 ---
+
+## 20260304-1133 | UI Fixes — Payment Inline Editing, Button Color, Report Filter Height | TASK
+
+Empty/null cells in the payments table were unresponsive to click on Flutter desktop because `GestureDetector` only hit-tests visible pixels and `Text('')` renders none; fixed with `HitTestBehavior.opaque` + `minHeight: 36`. Import Accounts button color normalized to app theme primary (removed teal override). Report screen date filter fields aligned in height to the account number field via `isDense: true` + matching `contentPadding`.
+
+---
