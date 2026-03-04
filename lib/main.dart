@@ -4,6 +4,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'accounts/accounts_screen.dart';
 import 'payments/payments_screen.dart';
 import 'reports/reports_screen.dart';
+import 'settings/settings_screen.dart';
 
 void main() {
   // Initialize FFI database factory for desktop (Windows/macOS/Linux)
@@ -47,7 +48,12 @@ class _AppShellState extends State<AppShell> {
   int _currentIndex = 0;
 
   // IndexedStack preserves state between tabs
-  final _screens = const [PaymentsScreen(), AccountsScreen(), ReportsScreen()];
+  final _screens = const [
+    PaymentsScreen(),
+    AccountsScreen(),
+    ReportsScreen(),
+    SettingsScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +63,7 @@ class _AppShellState extends State<AppShell> {
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
         selectedItemColor: Theme.of(context).colorScheme.primary,
+        type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.payment),
@@ -66,6 +73,10 @@ class _AppShellState extends State<AppShell> {
           BottomNavigationBarItem(
             icon: Icon(Icons.assessment_outlined),
             label: 'التقارير',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'الإعدادات',
           ),
         ],
       ),

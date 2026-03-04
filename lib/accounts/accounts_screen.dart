@@ -11,6 +11,7 @@ import '../data/models/subscriber_group.dart';
 import '../data/providers.dart';
 import '../import/account_import_service.dart';
 import 'accounts_providers.dart';
+import 'subscribers_export_service.dart';
 
 /// Accounts screen: manage subscriber groups and their account numbers.
 class AccountsScreen extends ConsumerStatefulWidget {
@@ -100,6 +101,11 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
               icon: const Icon(Icons.upload_file),
               label: const Text('استيراد حسابات'),
             ),
+          ),
+          FilledButton.icon(
+            onPressed: _exportSubscribers,
+            icon: const Icon(Icons.download),
+            label: const Text('تصدير المشتركين'),
           ),
           FilledButton.icon(
             onPressed: _addGroup,
@@ -793,6 +799,38 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
     await db.insertSubscriberGroup({'name': ''});
     ref.invalidate(subscriberGroupsProvider);
     ref.invalidate(totalAccountGroupsProvider);
+  }
+
+  Future<void> _exportSubscribers() async {
+    final db = ref.read(databaseServiceProvider);
+    final groups = await db.getAllGroupsWithAccounts();
+
+    final bytes = SubscribersExportService().buildExcelBytes(groups);
+    if (bytes == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('فشل إنشاء ملف التصدير'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final defaultName =
+        'subscribers_${DateTime.now().millisecondsSinceEpoch}.xlsx';
+    final tempFile = File('${Directory.systemTemp.path}/$defaultName');
+    await tempFile.writeAsBytes(bytes);
+
+    final savePath = await FilePicker.platform.saveFile(
+      dialogTitle: 'حفظ ملف المشتركين',
+      fileName: defaultName,
+      type: FileType.custom,
+      allowedExtensions: ['xlsx'],
+    );
+
+    if (savePath == null) return;
+    await tempFile.copy(savePath);
   }
 
   void _startAddAccount(int groupId) {

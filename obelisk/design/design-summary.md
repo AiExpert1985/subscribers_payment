@@ -100,3 +100,14 @@ _(none)_
 - `_TableCell` defined as a private file-level widget (not inside state class) to support `const` in table children
 
 ---
+
+## 20260304-1358 | Settings Tab, Subscribers Export, Payment Import Aliases
+
+- New `lib/settings/` feature folder with `SettingsScreen` (ConsumerWidget; no local state)
+- Reset protection: `_ConfirmResetDialog` (private StatefulWidget) — delete button disabled until `TextEditingController` matches "reset" (case-insensitive); no secondary confirmation click needed
+- `BottomNavigationBarType.fixed` required when nav bar has 4+ items
+- `SubscribersExportService` in `lib/accounts/` — same pattern as `PaymentExportService`; variable-width rows (account columns expand horizontally per group)
+- `getAllGroupsWithAccounts()` uses sequential per-group queries (N+1), consistent with existing `subscriberGroupsProvider` approach
+- Hot-reload from 3→4 `IndexedStack` children causes `_AssertionError`; requires full app restart
+
+---

@@ -97,3 +97,9 @@ Fully decoupled payments from subscribers. Removed auto-creation of accounts/gro
 Empty/null cells in the payments table were unresponsive to click on Flutter desktop because `GestureDetector` only hit-tests visible pixels and `Text('')` renders none; fixed with `HitTestBehavior.opaque` + `minHeight: 36`. Import Accounts button color normalized to app theme primary (removed teal override). Report screen date filter fields aligned in height to the account number field via `isDense: true` + matching `contentPadding`.
 
 ---
+
+## 20260304-1358 | Settings Tab, Subscribers Export, Payment Import Aliases | TASK
+
+Added a Settings tab (4th nav item) with two protected data-reset actions (Reset Accounts, Reset Payments), each requiring the user to type "reset" before activating. Added a subscribers Excel export to the Accounts screen (one row per group: ID, name, accounts horizontally). Extended payment import alias map with o_accountno, o_date, o_amount, o_txtusern for legacy source compatibility.
+
+---

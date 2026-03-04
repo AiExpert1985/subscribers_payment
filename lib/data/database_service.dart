@@ -121,6 +121,33 @@ class DatabaseService {
     return await db.query(tableSubscriberGroups);
   }
 
+  /// Returns all subscriber groups with their account numbers, ordered by group id.
+  ///
+  /// Each entry has keys: 'id' (int), 'name' (String), 'accounts' (`List<int>`).
+  Future<List<Map<String, dynamic>>> getAllGroupsWithAccounts() async {
+    final db = await database;
+
+    final groups = await db.query(tableSubscriberGroups, orderBy: 'id ASC');
+
+    final result = <Map<String, dynamic>>[];
+    for (final group in groups) {
+      final accountRows = await db.query(
+        tableAccounts,
+        columns: ['account_number'],
+        where: 'subscriber_group_id = ?',
+        whereArgs: [group['id']],
+        orderBy: 'account_number ASC',
+      );
+      result.add({
+        'id': group['id'],
+        'name': group['name'],
+        'accounts': accountRows.map((r) => r['account_number'] as int).toList(),
+      });
+    }
+
+    return result;
+  }
+
   /// Gets paginated subscriber groups with optional name and account-number filters.
   Future<List<Map<String, dynamic>>> getSubscriberGroupsPaginated({
     int page = 0,
@@ -463,6 +490,24 @@ class DatabaseService {
   Future<int> deletePayment(int id) async {
     final db = await database;
     return await db.delete(tablePayments, where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ─── Reset Operations ────────────────────────────────────────────
+
+  /// Deletes ALL subscriber groups and accounts (cascade), leaving payments untouched.
+  Future<void> resetAllAccounts() async {
+    final db = await database;
+    await db.transaction((txn) async {
+      await txn.delete(tableSubscriberGroups);
+    });
+  }
+
+  /// Deletes ALL payment records, leaving accounts and subscriber groups untouched.
+  Future<void> resetAllPayments() async {
+    final db = await database;
+    await db.transaction((txn) async {
+      await txn.delete(tablePayments);
+    });
   }
 
   // ─── Import Helpers ──────────────────────────────────────────────
