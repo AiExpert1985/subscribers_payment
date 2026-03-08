@@ -606,6 +606,19 @@ class DatabaseService {
     return results.map((r) => r['id'] as int).toList();
   }
 
+  /// Returns all distinct reference_account_numbers from payments that have
+  /// no matching account_number in the accounts table, ordered ascending.
+  Future<List<int>> getUnmatchedPaymentAccountNumbers() async {
+    final db = await database;
+    final rows = await db.rawQuery(
+      'SELECT DISTINCT reference_account_number FROM $tablePayments '
+      'WHERE reference_account_number NOT IN '
+      '(SELECT account_number FROM $tableAccounts) '
+      'ORDER BY reference_account_number ASC',
+    );
+    return rows.map((r) => r['reference_account_number'] as int).toList();
+  }
+
   // ─── Private Helpers ─────────────────────────────────────────────
 
   /// Builds a WHERE clause from column filters.

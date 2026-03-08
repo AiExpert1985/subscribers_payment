@@ -1,8 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:file_picker/file_picker.dart';
 import '../data/providers.dart';
 import '../accounts/accounts_providers.dart';
 import '../payments/payments_providers.dart';
+import 'unmatched_accounts_export_service.dart';
 
 /// Settings screen with protected data-reset actions.
 class SettingsScreen extends ConsumerWidget {
@@ -40,6 +43,12 @@ class SettingsScreen extends ConsumerWidget {
               warningColor: Colors.red,
               onConfirmed: () => _resetPayments(context, ref),
             ),
+            const SizedBox(height: 20),
+            const Divider(),
+            const SizedBox(height: 20),
+            _UnmatchedAccountsSection(
+              onPressed: () => _findUnmatchedAccounts(context, ref),
+            ),
           ],
         ),
       ),
@@ -68,6 +77,104 @@ class SettingsScreen extends ConsumerWidget {
         const SnackBar(content: Text('تم مسح جميع سجلات التسديدات')),
       );
     }
+  }
+
+  Future<void> _findUnmatchedAccounts(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final db = ref.read(databaseServiceProvider);
+    final unmatched = await db.getUnmatchedPaymentAccountNumbers();
+    if (!context.mounted) return;
+    await showDialog(
+      context: context,
+      builder: (ctx) =>
+          _UnmatchedAccountsResultDialog(accountNumbers: unmatched),
+    );
+  }
+}
+
+/// Section that triggers the unmatched-accounts lookup.
+class _UnmatchedAccountsSection extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _UnmatchedAccountsSection({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'الحسابات الغير مسجلة',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 6),
+        const Text(
+          'يعرض أرقام الحسابات الموجودة في التسديدات والتي لم تُضف لأي مشترك.',
+          style: TextStyle(fontSize: 13, color: Colors.black54),
+        ),
+        const SizedBox(height: 12),
+        FilledButton.icon(
+          onPressed: onPressed,
+          icon: const Icon(Icons.manage_search),
+          label: const Text('الحسابات الغير مسجلة'),
+        ),
+      ],
+    );
+  }
+}
+
+/// Result dialog shown after the unmatched-accounts lookup completes.
+class _UnmatchedAccountsResultDialog extends StatelessWidget {
+  final List<int> accountNumbers;
+
+  const _UnmatchedAccountsResultDialog({required this.accountNumbers});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasUnmatched = accountNumbers.isNotEmpty;
+    return AlertDialog(
+      title: const Text('الحسابات الغير مسجلة'),
+      content: Text(
+        hasUnmatched
+            ? 'تم الانتهاء، هناك ${accountNumbers.length} حساب غير مضاف لأي مشترك'
+            : 'تم الانتهاء، جميع الحسابات مسجلة',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('إغلاق'),
+        ),
+        if (hasUnmatched)
+          FilledButton.icon(
+            onPressed: () => _export(context),
+            icon: const Icon(Icons.download),
+            label: const Text('تصدير Excel'),
+          ),
+      ],
+    );
+  }
+
+  Future<void> _export(BuildContext context) async {
+    final service = UnmatchedAccountsExportService();
+    final bytes = service.buildExcelBytes(accountNumbers);
+    if (bytes == null) return;
+
+    final defaultName =
+        'unmatched_accounts_${DateTime.now().millisecondsSinceEpoch}.xlsx';
+    final tempFile = File('${Directory.systemTemp.path}/$defaultName');
+    await tempFile.writeAsBytes(bytes);
+
+    final savePath = await FilePicker.platform.saveFile(
+      dialogTitle: 'حفظ الحسابات الغير مسجلة',
+      fileName: defaultName,
+      type: FileType.custom,
+      allowedExtensions: ['xlsx'],
+    );
+
+    if (savePath == null) return;
+    await tempFile.copy(savePath);
   }
 }
 
