@@ -79,35 +79,5 @@ Generated: 2026-03-03
 
 _(none)_
 
-## Unprocessed
+## New
 
-## 20260303-0100 | Accounts Chip Width, PDF Centering, and Column Headers
-
-- Account chips: 130px → 160px (line 57 row-description still says "uniform 130px" — reconcile on next maintain-project run)
-- Accounts screen: static column header row added above ListView; headers: #, اسم المشترك, ارقام الحساب
-- PDF `_pdfLine`: replaced 2-column Row layout with `pw.Center(pw.Text('$title: $value', textAlign: center, textDirection: rtl))`
-- PDF table: columns in natural order (رقم الحساب → رقم الختم); `cellAlignment` and `headerAlignment` → `pw.Alignment.center`
-- PDF header: wrapped in `pw.Center`
-
----
-
-## 20260303-1226 | Payment / Subscriber Full Separation
-
-- `ImportService` strip: removed account-collection loop and `findOrCreateAccountAndGroup` calls; payment import is now parse → batch-insert only
-- New `AccountImportParser`: same alias-matching pattern as `ExcelParser`; 2-column Excel (old/new account numbers)
-- New `AccountImportService`: plain class injected with `DatabaseService`; error model carries `oldAccount?`, `newAccount?`, `reason` (Arabic string) used for both dialog display and Excel export
-- Excel error export uses existing `excel` package + `FilePicker.saveFile`; `excel.Border` conflict resolved with `hide Border` on import
-- `_TableCell` defined as a private file-level widget (not inside state class) to support `const` in table children
-
----
-
-## 20260304-1358 | Settings Tab, Subscribers Export, Payment Import Aliases
-
-- New `lib/settings/` feature folder with `SettingsScreen` (ConsumerWidget; no local state)
-- Reset protection: `_ConfirmResetDialog` (private StatefulWidget) — delete button disabled until `TextEditingController` matches "reset" (case-insensitive); no secondary confirmation click needed
-- `BottomNavigationBarType.fixed` required when nav bar has 4+ items
-- `SubscribersExportService` in `lib/accounts/` — same pattern as `PaymentExportService`; variable-width rows (account columns expand horizontally per group)
-- `getAllGroupsWithAccounts()` uses sequential per-group queries (N+1), consistent with existing `subscriberGroupsProvider` approach
-- Hot-reload from 3→4 `IndexedStack` children causes `_AssertionError`; requires full app restart
-
----
