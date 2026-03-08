@@ -2,11 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import '../data/database_service.dart';
+import 'csv_parser.dart';
 import 'excel_parser.dart';
 
 // Top-level function required by compute() — closures are not allowed because
 // they would capture non-sendable Flutter state through shared Dart contexts.
-ExcelParseResult _parseFile(String path) => ExcelParser().parseFile(path);
+ExcelParseResult _parseFile(String path) {
+  final ext = path.split('.').last.toLowerCase();
+  if (ext == 'csv') return CsvParser().parseFile(path);
+  return ExcelParser().parseFile(path);
+}
 
 /// Result of importing one or more Excel files.
 class ImportResult {

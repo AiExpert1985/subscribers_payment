@@ -814,7 +814,7 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
   Future<void> _importFiles() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['xlsx', 'xls'],
+      allowedExtensions: ['xlsx', 'xls', 'csv'],
       allowMultiple: true,
       dialogTitle: 'اختر ملفات التسديدات',
     );

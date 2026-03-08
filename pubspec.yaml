@@ -45,6 +45,8 @@ dependencies:
   
   # Excel file parsing
   excel: ^4.0.6
+  # CSV parsing (handles quoted fields, embedded commas)
+  csv: ^6.0.0
   
   # File picker for import
   file_picker: ^10.3.10

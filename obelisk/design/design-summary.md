@@ -81,3 +81,5 @@ _(none)_
 
 ## New
 
+
+20260308-0000 | CSV Import Support | `CsvParser` returns the existing `ExcelParseResult` type so the import pipeline requires no structural changes. Delimiter is auto-detected from the header line (comma / semicolon / tab). Routing is handled inside the existing top-level `_parseFile` function via an extension check. The `csv` package (already a dependency) is used with `shouldParseNumbers: false` for uniform string-based value parsing.
