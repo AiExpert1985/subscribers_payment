@@ -22,7 +22,7 @@ class SettingsScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
             _ResetSection(
-              title: 'إعادة ضبط المشتركين',
+              title: 'تصفير بيانات المشتركين',
               description:
                   'يحذف جميع المشتركين وأرقام الحسابات المرتبطة بهم.\n'
                   'لا يؤثر على سجلات التسديدات.',
@@ -33,7 +33,7 @@ class SettingsScreen extends ConsumerWidget {
             const Divider(),
             const SizedBox(height: 20),
             _ResetSection(
-              title: 'إعادة ضبط التسديدات',
+              title: 'تصفير بيانات التسديدات',
               description:
                   'يحذف جميع سجلات التسديدات.\n'
                   'لا يؤثر على بيانات المشتركين والحسابات.',
