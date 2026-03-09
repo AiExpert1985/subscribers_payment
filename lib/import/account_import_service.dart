@@ -27,10 +27,11 @@ class AccountImportResult {
 /// Orchestrates the account-import pipeline: parse → validate → insert accounts.
 ///
 /// Rules:
-/// - Old account must already exist in DB; otherwise skipped with error.
-/// - New account must not already exist anywhere; otherwise skipped with error.
-/// - On success: new account is inserted into the same group as old account.
-/// - If اسم المشترك is non-empty: the subscriber group name is overwritten.
+/// - Old exists, new doesn't → add new to old's group.
+/// - Old exists, new already exists → skip with error.
+/// - Old doesn't exist, new doesn't exist → create new group, insert both.
+/// - Old doesn't exist, new already exists → add old to new's group; skip new.
+/// - If اسم المشترك is non-empty: the target group's name is overwritten.
 class AccountImportService {
   final DatabaseService _db;
 
@@ -55,50 +56,82 @@ class AccountImportService {
     int inserted = 0;
 
     for (final row in parseResult.rows) {
-      final groupId = await _db.getGroupIdByAccountNumber(row.oldAccount);
+      final oldGroupId = await _db.getGroupIdByAccountNumber(row.oldAccount);
 
-      if (groupId == null) {
-        errors.add(
-          AccountImportError(
-            oldAccount: row.oldAccount,
-            newAccount: row.newAccount,
-            reason: 'الحساب القديم غير موجود',
-          ),
-        );
-        continue;
-      }
+      if (oldGroupId != null) {
+        // Old account exists — add new to old's group.
+        if (row.subscriberName != null && row.subscriberName!.isNotEmpty) {
+          await _db.updateSubscriberGroup(oldGroupId, {'name': row.subscriberName});
+        }
 
-      // Update group name if provided and non-empty.
-      if (row.subscriberName != null && row.subscriberName!.isNotEmpty) {
-        await _db.updateSubscriberGroup(groupId, {'name': row.subscriberName});
-      }
-
-      final newExists = await _db.getGroupIdByAccountNumber(row.newAccount);
-      if (newExists != null) {
-        errors.add(
-          AccountImportError(
+        final newExists = await _db.getGroupIdByAccountNumber(row.newAccount);
+        if (newExists != null) {
+          errors.add(AccountImportError(
             oldAccount: row.oldAccount,
             newAccount: row.newAccount,
             reason: 'الحساب الجديد موجود مسبقاً',
-          ),
-        );
-        continue;
-      }
+          ));
+          continue;
+        }
 
-      try {
-        await _db.insertAccount({
-          'account_number': row.newAccount,
-          'subscriber_group_id': groupId,
-        });
-        inserted++;
-      } catch (_) {
-        errors.add(
-          AccountImportError(
+        try {
+          await _db.insertAccount({
+            'account_number': row.newAccount,
+            'subscriber_group_id': oldGroupId,
+          });
+          inserted++;
+        } catch (_) {
+          errors.add(AccountImportError(
             oldAccount: row.oldAccount,
             newAccount: row.newAccount,
             reason: 'فشل الحفظ',
-          ),
-        );
+          ));
+        }
+      } else {
+        // Old account doesn't exist — check new account.
+        final newGroupId = await _db.getGroupIdByAccountNumber(row.newAccount);
+
+        if (newGroupId != null) {
+          // New exists — add old to new's group.
+          if (row.subscriberName != null && row.subscriberName!.isNotEmpty) {
+            await _db.updateSubscriberGroup(newGroupId, {'name': row.subscriberName});
+          }
+          try {
+            await _db.insertAccount({
+              'account_number': row.oldAccount,
+              'subscriber_group_id': newGroupId,
+            });
+            inserted++;
+          } catch (_) {
+            errors.add(AccountImportError(
+              oldAccount: row.oldAccount,
+              newAccount: row.newAccount,
+              reason: 'فشل الحفظ',
+            ));
+          }
+        } else {
+          // Neither exists — create new group, insert both.
+          try {
+            final groupId = await _db.insertSubscriberGroup({
+              'name': row.subscriberName ?? '',
+            });
+            await _db.insertAccount({
+              'account_number': row.oldAccount,
+              'subscriber_group_id': groupId,
+            });
+            await _db.insertAccount({
+              'account_number': row.newAccount,
+              'subscriber_group_id': groupId,
+            });
+            inserted += 2;
+          } catch (_) {
+            errors.add(AccountImportError(
+              oldAccount: row.oldAccount,
+              newAccount: row.newAccount,
+              reason: 'فشل الحفظ',
+            ));
+          }
+        }
       }
     }
 
