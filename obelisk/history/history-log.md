@@ -419,3 +419,11 @@ If `اسم المشترك` is present and non-empty, the target group's name is 
 **Rejected:** None.
 
 ---
+
+## 20260309-0300 | Account Import — Expanded Column Header Keywords | TASK
+
+**Task:** Expanded the account-number and subscriber-name keyword lists in the account import parser to match a broader set of real-world column headers. Added "حساب", "قديم", "جديد", "account no" to account keywords and "اسم" to name aliases. No routing or pipeline logic changed.
+
+**Rejected:** None.
+
+---

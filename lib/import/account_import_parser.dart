@@ -37,13 +37,17 @@ class AccountImportParser {
   static const _accountKeywords = [
     'الحساب القديم',
     'الحساب الجديد',
+    'حساب',
+    'قديم',
+    'جديد',
     'account',
+    'account no',
+    'account_no',
     'old',
     'new',
-    'account_no',
   ];
 
-  static const _nameAliases = ['اسم المشترك', 'subscriber name', 'name'];
+  static const _nameAliases = ['اسم المشترك', 'اسم', 'subscriber name', 'name'];
 
   AccountImportParseResult parseFile(String filePath) {
     final fileName = filePath.split(Platform.pathSeparator).last;
