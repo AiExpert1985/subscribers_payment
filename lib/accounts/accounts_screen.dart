@@ -95,7 +95,7 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
         children: [
           Tooltip(
             message:
-                'استيراد ملف اكسل بالأعمدة: الحساب القديم، الحساب الجديد، اسم المشترك',
+                'استيراد ملف اكسل أو CSV يحتوي على عمود أو أكثر لأرقام الحسابات (الحساب القديم، الحساب الجديد، account، old، new، account_no)',
             child: FilledButton.icon(
               onPressed: _importAccounts,
               icon: const Icon(Icons.upload_file),
@@ -689,9 +689,8 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
                         width: 0.5,
                       ),
                       columnWidths: const {
-                        0: FlexColumnWidth(1),
-                        1: FlexColumnWidth(1),
-                        2: FlexColumnWidth(2.5),
+                        0: FlexColumnWidth(2),
+                        1: FlexColumnWidth(1.5),
                       },
                       children: [
                         TableRow(
@@ -699,16 +698,18 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
                             color: Colors.grey.shade200,
                           ),
                           children: const [
-                            _TableCell(text: 'الحساب القديم', isHeader: true),
-                            _TableCell(text: 'الحساب الجديد', isHeader: true),
+                            _TableCell(text: 'الأرقام', isHeader: true),
                             _TableCell(text: 'السبب', isHeader: true),
                           ],
                         ),
                         for (final e in allErrors)
                           TableRow(
                             children: [
-                              _TableCell(text: e.oldAccount?.toString() ?? '-'),
-                              _TableCell(text: e.newAccount?.toString() ?? '-'),
+                              _TableCell(
+                                text: e.accounts.isEmpty
+                                    ? '-'
+                                    : e.accounts.join('، '),
+                              ),
                               _TableCell(text: e.reason),
                             ],
                           ),
@@ -746,15 +747,13 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
 
     // Header row
     sheet.appendRow([
-      TextCellValue('الحساب القديم'),
-      TextCellValue('الحساب الجديد'),
+      TextCellValue('الأرقام'),
       TextCellValue('السبب'),
     ]);
 
     for (final e in errors) {
       sheet.appendRow([
-        e.oldAccount != null ? IntCellValue(e.oldAccount!) : TextCellValue('-'),
-        e.newAccount != null ? IntCellValue(e.newAccount!) : TextCellValue('-'),
+        TextCellValue(e.accounts.isEmpty ? '-' : e.accounts.join('، ')),
         TextCellValue(e.reason),
       ]);
     }

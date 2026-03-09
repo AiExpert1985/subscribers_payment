@@ -411,3 +411,11 @@ If `اسم المشترك` is present and non-empty, the target group's name is 
 **Rejected:** None.
 
 ---
+
+## 20260309-0200 | Account Import — Flexible N-Column Account Detection | TASK
+
+**Task:** Replace the fixed two-column (old/new) import model with a flexible N-column model. Any column whose header contains a known account keyword (partial, case-insensitive) is treated as an account column, enabling single-column file imports. Per-row routing uses four cases keyed by the number of distinct existing DB groups: conflict (>1), create new (0), add to existing (1 with absent accounts), or silent skip (all already in same group). Error display and export updated to show account numbers as a joined list with a single reason column.
+
+**Rejected:** None.
+
+---
