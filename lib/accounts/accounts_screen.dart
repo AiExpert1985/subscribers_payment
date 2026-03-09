@@ -621,7 +621,7 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
   Future<void> _importAccounts() async {
     final picked = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['xlsx', 'xls'],
+      allowedExtensions: ['xlsx', 'xls', 'csv'],
       dialogTitle: 'اختر ملف الحسابات',
     );
     if (picked == null || picked.files.isEmpty) return;
@@ -657,19 +657,14 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
   }
 
   void _showImportResultDialog(AccountImportResult result) {
-    final realErrors = result.errors
-        .where((e) => e.oldAccount != null || e.newAccount != null)
-        .toList();
-    final parseErrors = result.errors
-        .where((e) => e.oldAccount == null && e.newAccount == null)
-        .toList();
+    final allErrors = result.errors;
 
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('نتيجة الاستيراد'),
         content: SizedBox(
-          width: 480,
+          width: 520,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -678,25 +673,15 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
                 'تم إضافة ${result.inserted} حساب بنجاح',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              if (parseErrors.isNotEmpty)
-                ...parseErrors.map(
-                  (e) => Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      e.reason,
-                      style: const TextStyle(color: Colors.red, fontSize: 13),
-                    ),
-                  ),
-                ),
-              if (realErrors.isNotEmpty) ...[
+              if (allErrors.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 Text(
-                  '${realErrors.length} سجل بها مشاكل:',
+                  '${allErrors.length} سجل بها مشاكل:',
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
                 Container(
-                  constraints: const BoxConstraints(maxHeight: 240),
+                  constraints: const BoxConstraints(maxHeight: 320),
                   child: SingleChildScrollView(
                     child: Table(
                       border: TableBorder.all(
@@ -706,7 +691,7 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
                       columnWidths: const {
                         0: FlexColumnWidth(1),
                         1: FlexColumnWidth(1),
-                        2: FlexColumnWidth(2),
+                        2: FlexColumnWidth(2.5),
                       },
                       children: [
                         TableRow(
@@ -719,7 +704,7 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
                             _TableCell(text: 'السبب', isHeader: true),
                           ],
                         ),
-                        for (final e in realErrors)
+                        for (final e in allErrors)
                           TableRow(
                             children: [
                               _TableCell(text: e.oldAccount?.toString() ?? '-'),
@@ -736,13 +721,13 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
           ),
         ),
         actions: [
-          if (realErrors.isNotEmpty)
+          if (allErrors.isNotEmpty)
             TextButton.icon(
               icon: const Icon(Icons.download),
               label: const Text('تصدير الأخطاء'),
               onPressed: () {
                 Navigator.of(ctx).pop();
-                _exportErrorsToExcel(realErrors);
+                _exportErrorsToExcel(allErrors);
               },
             ),
           FilledButton(
