@@ -427,3 +427,11 @@ If `اسم المشترك` is present and non-empty, the target group's name is 
 **Rejected:** None.
 
 ---
+
+## 20260309-0400 | Account Import — Name Update on Silent Skip & Settings About Section | TASK
+
+**Task:** Two improvements: (1) the account import "all already in same group" silent-skip case now applies a name update if a non-empty subscriber name is present (uniqueness conflicts silently ignored); (2) a static Arabic About section was added to the bottom of the Settings screen displaying program title and authorship credit.
+
+**Rejected:** None.
+
+---

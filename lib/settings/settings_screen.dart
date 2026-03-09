@@ -49,6 +49,8 @@ class SettingsScreen extends ConsumerWidget {
             _UnmatchedAccountsSection(
               onPressed: () => _findUnmatchedAccounts(context, ref),
             ),
+            const Spacer(),
+            const _AboutSection(),
           ],
         ),
       ),
@@ -175,6 +177,50 @@ class _UnmatchedAccountsResultDialog extends StatelessWidget {
 
     if (savePath == null) return;
     await tempFile.copy(savePath);
+  }
+}
+
+/// Static "About" section displayed at the bottom of the Settings screen.
+class _AboutSection extends StatelessWidget {
+  const _AboutSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outlineVariant,
+        ),
+      ),
+      child: const Column(
+        children: [
+          Text(
+            'حول البرنامج',
+            textAlign: TextAlign.center,
+            textDirection: TextDirection.rtl,
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'هذا البرنامج هو قاعدة بيانات لجميع تسديدات المشتركين',
+            textAlign: TextAlign.center,
+            textDirection: TextDirection.rtl,
+            style: TextStyle(fontSize: 13, color: Colors.black54),
+          ),
+          SizedBox(height: 4),
+          Text(
+            'تم تصميم هذا البرنامج من قبل قسم الاتصالات في فرع توزيع كهرباء مركز نينوى 2026',
+            textAlign: TextAlign.center,
+            textDirection: TextDirection.rtl,
+            style: TextStyle(fontSize: 13, color: Colors.black54),
+          ),
+        ],
+      ),
+    );
   }
 }
 

@@ -34,7 +34,7 @@ Per-row routing (using all account numbers found in the row):
 - All absent from DB → create new subscriber group (with name if present), insert all accounts.
 - Some/all exist in exactly ONE group, rest absent → add absent accounts to that group; update group name if present.
 - Accounts found across MORE THAN ONE group → skip with error "تعارض في المجموعات".
-- All already exist in the same group → silent skip (not an error).
+- All already exist in the same group → update group name if present, then silent skip (not an error).
 
 If `اسم المشترك` is non-empty the target group's name is overwritten; a blank/missing cell leaves it unchanged. All skipped rows are collected and shown in a result dialog with an option to export them to Excel (columns: الأرقام, السبب).
 
@@ -70,6 +70,12 @@ If `اسم المشترك` is non-empty the target group's name is overwritten; 
 20260309-0100 | Account Import — Create Group When Old Account Missing | UPDATE
 Old: "Rows where the old account is not found, the new account already exists, or required cell values are invalid are skipped."
 New: If old account doesn't exist and new account also doesn't exist → create new subscriber group, insert both accounts. If old account doesn't exist but new account exists → add old account to new's group; new is not re-inserted. Old-exists cases are unchanged.
+
+20260309-0400 | Account Import — Name Update on Silent Skip | UPDATE
+Old: "All already exist in the same group → silent skip (not an error)."
+New: All already exist in the same group → update group name if present (name conflict silently ignored), then silent skip (not an error).
+
+---
 
 20260309-0200 | Account Import — Flexible N-Column Account Detection | UPDATE
 Old: "An Excel or CSV file with columns الحساب القديم / الحساب الجديد and an optional اسم المشترك can be imported from the Accounts screen. For each row: Old exists, new doesn't → new account added to old's group. Old exists, new already exists → skipped with error 'الحساب الجديد موجود مسبقاً'. Old doesn't exist, new doesn't exist → new subscriber group created; both accounts inserted into it. Old doesn't exist, new already exists → old account added to new's group; new is not re-inserted. If اسم المشترك is present and non-empty, the target group's name is overwritten. Rows with invalid/missing required cell values are skipped. All skipped rows are collected and shown in a result dialog with an option to export them to Excel (columns: الحساب القديم, الحساب الجديد, السبب)."

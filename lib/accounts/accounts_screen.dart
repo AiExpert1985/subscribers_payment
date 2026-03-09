@@ -95,7 +95,7 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
         children: [
           Tooltip(
             message:
-                'استيراد ملف اكسل أو CSV يحتوي على عمود أو أكثر لأرقام الحسابات (الحساب القديم، الحساب الجديد، account، old، new، account_no)',
+                'استيراد ملف اكسل أو CSV يحتوي على عمود أو أكثر لأرقام الحسابات (الحساب القديم، الحساب الجديد، الاسم)',
             child: FilledButton.icon(
               onPressed: _importAccounts,
               icon: const Icon(Icons.upload_file),
@@ -746,10 +746,7 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
     excel.delete('Sheet1'); // remove default blank sheet
 
     // Header row
-    sheet.appendRow([
-      TextCellValue('الأرقام'),
-      TextCellValue('السبب'),
-    ]);
+    sheet.appendRow([TextCellValue('الأرقام'), TextCellValue('السبب')]);
 
     for (final e in errors) {
       sheet.appendRow([

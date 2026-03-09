@@ -27,7 +27,7 @@ class AccountImportResult {
 /// - Some/all exist in exactly ONE group, rest absent → add absent to that group;
 ///   update name if present.
 /// - Accounts found across MORE THAN ONE group → skip, error "تعارض في المجموعات".
-/// - All already in same group → silent skip (not an error).
+/// - All already in same group → update name if present, then silent skip.
 class AccountImportService {
   final DatabaseService _db;
 
@@ -90,7 +90,14 @@ class AccountImportService {
     final targetGroupId = distinctGroupIds.first;
 
     if (absentAccounts.isEmpty) {
-      // All already in the same group — nothing to do.
+      // All already in the same group — update name if provided, then skip.
+      if (row.subscriberName != null && row.subscriberName!.isNotEmpty) {
+        try {
+          await _db.updateSubscriberGroup(targetGroupId, {'name': row.subscriberName});
+        } catch (_) {
+          // Name conflict (uniqueness) — silently skip the name update.
+        }
+      }
       return (inserted: 0, error: null);
     }
 
