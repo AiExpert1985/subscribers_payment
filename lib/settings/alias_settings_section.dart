@@ -46,7 +46,7 @@ class AccountAliasSectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => AliasSectionCard(
-    title: 'أعمدة استيراد الحسابات',
+    title: 'أعمدة استيراد المشتركين',
     section: 'account',
     fieldLabels: _accountFieldLabels,
     requiredFields: kAccountRequiredFields,
@@ -91,10 +91,8 @@ class AliasSectionCard extends ConsumerWidget {
         padding: EdgeInsets.all(16),
         child: CircularProgressIndicator(),
       ),
-      error: (e, _) => Padding(
-        padding: const EdgeInsets.all(16),
-        child: Text('خطأ: $e'),
-      ),
+      error: (e, _) =>
+          Padding(padding: const EdgeInsets.all(16), child: Text('خطأ: $e')),
       data: (aliases) => Column(
         children: fieldLabels.entries.map((entry) {
           final field = entry.key;
@@ -121,7 +119,10 @@ class AliasSectionCard extends ConsumerWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               resetButton,
@@ -142,10 +143,7 @@ class AliasSectionCard extends ConsumerWidget {
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
-          children: [
-            resetButton,
-            const Icon(Icons.expand_more),
-          ],
+          children: [resetButton, const Icon(Icons.expand_more)],
         ),
         children: [
           Padding(
@@ -174,7 +172,9 @@ class AliasSectionCard extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('إعادة تعيين $title'),
-        content: const Text('سيتم حذف جميع الأسماء المخصصة واستعادة الافتراضية.'),
+        content: const Text(
+          'سيتم حذف جميع الأسماء المخصصة واستعادة الافتراضية.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
@@ -236,7 +236,10 @@ class _FieldAliasRowState extends State<_FieldAliasRow> {
               padding: const EdgeInsets.only(top: 8),
               child: Text(
                 widget.label,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
                 textDirection: TextDirection.rtl,
               ),
             ),
@@ -251,7 +254,8 @@ class _FieldAliasRowState extends State<_FieldAliasRow> {
                   spacing: 6,
                   runSpacing: 4,
                   children: widget.aliases.map((alias) {
-                    final canDelete = !widget.isRequired || widget.aliases.length > 1;
+                    final canDelete =
+                        !widget.isRequired || widget.aliases.length > 1;
                     return Chip(
                       label: Text(alias, style: const TextStyle(fontSize: 12)),
                       deleteIcon: canDelete
@@ -291,8 +295,9 @@ class _FieldAliasRowState extends State<_FieldAliasRow> {
                       icon: const Icon(Icons.add, size: 18),
                       tooltip: 'إضافة',
                       style: IconButton.styleFrom(
-                        backgroundColor:
-                            Theme.of(context).colorScheme.primaryContainer,
+                        backgroundColor: Theme.of(
+                          context,
+                        ).colorScheme.primaryContainer,
                       ),
                     ),
                   ],

@@ -8,7 +8,6 @@ import '../payments/payments_providers.dart';
 import 'alias_settings_section.dart';
 import 'unmatched_accounts_export_service.dart';
 
-
 /// Settings screen with protected data-reset actions.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -291,7 +290,7 @@ class _AliasButtons extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: onAccount,
               icon: const Icon(Icons.tune),
-              label: const Text('أعمدة استيراد الحسابات'),
+              label: const Text('أعمدة استيراد المشتركين'),
             ),
           ],
         ),
