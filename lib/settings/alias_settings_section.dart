@@ -21,53 +21,117 @@ const _accountFieldLabels = {
   'subscriber_name': 'اسم المشترك',
 };
 
-/// Two collapsible sections (payment + account) for managing import column aliases.
-class AliasSettingsSections extends StatelessWidget {
-  const AliasSettingsSections({super.key});
+/// Card for the payment import aliases section.
+class PaymentAliasSectionCard extends StatelessWidget {
+  final bool collapsible;
+
+  const PaymentAliasSectionCard({super.key, this.collapsible = true});
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _AliasSection(
-          title: 'أعمدة استيراد المدفوعات',
-          section: 'payment',
-          fieldLabels: _paymentFieldLabels,
-          requiredFields: kPaymentRequiredFields,
-          provider: paymentAliasesProvider,
-        ),
-        SizedBox(height: 12),
-        _AliasSection(
-          title: 'أعمدة استيراد الحسابات',
-          section: 'account',
-          fieldLabels: _accountFieldLabels,
-          requiredFields: kAccountRequiredFields,
-          provider: accountAliasesProvider,
-        ),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => AliasSectionCard(
+    title: 'أعمدة استيراد المدفوعات',
+    section: 'payment',
+    fieldLabels: _paymentFieldLabels,
+    requiredFields: kPaymentRequiredFields,
+    provider: paymentAliasesProvider,
+    collapsible: collapsible,
+  );
 }
 
-class _AliasSection extends ConsumerWidget {
+/// Card for the account import aliases section.
+class AccountAliasSectionCard extends StatelessWidget {
+  final bool collapsible;
+
+  const AccountAliasSectionCard({super.key, this.collapsible = true});
+
+  @override
+  Widget build(BuildContext context) => AliasSectionCard(
+    title: 'أعمدة استيراد الحسابات',
+    section: 'account',
+    fieldLabels: _accountFieldLabels,
+    requiredFields: kAccountRequiredFields,
+    provider: accountAliasesProvider,
+    collapsible: collapsible,
+  );
+}
+
+/// Collapsible card for managing import column aliases for a single section.
+/// Set [collapsible] to false to render content directly (for use inside dialogs).
+class AliasSectionCard extends ConsumerWidget {
   final String title;
   final String section;
   final Map<String, String> fieldLabels;
   final Set<String> requiredFields;
   final FutureProvider<Map<String, List<String>>> provider;
+  final bool collapsible;
 
-  const _AliasSection({
+  const AliasSectionCard({
+    super.key,
     required this.title,
     required this.section,
     required this.fieldLabels,
     required this.requiredFields,
     required this.provider,
+    this.collapsible = true,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final aliasesAsync = ref.watch(provider);
+
+    final resetButton = TextButton.icon(
+      onPressed: () => _resetSection(context, ref),
+      icon: const Icon(Icons.restart_alt, size: 16),
+      label: const Text('إعادة تعيين'),
+      style: TextButton.styleFrom(foregroundColor: Colors.orange),
+    );
+
+    final content = aliasesAsync.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.all(16),
+        child: CircularProgressIndicator(),
+      ),
+      error: (e, _) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Text('خطأ: $e'),
+      ),
+      data: (aliases) => Column(
+        children: fieldLabels.entries.map((entry) {
+          final field = entry.key;
+          final label = entry.value;
+          final fieldAliases = aliases[field] ?? [];
+          final isRequired = requiredFields.contains(field);
+          return _FieldAliasRow(
+            label: label,
+            aliases: fieldAliases,
+            isRequired: isRequired,
+            onAdd: (alias) => _addAlias(ref, field, alias),
+            onDelete: (alias) => _deleteAlias(ref, field, alias),
+          );
+        }).toList(),
+      ),
+    );
+
+    if (!collapsible) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                ),
+              ),
+              resetButton,
+            ],
+          ),
+          const Divider(height: 16),
+          content,
+        ],
+      );
+    }
 
     return Card(
       margin: EdgeInsets.zero,
@@ -79,43 +143,14 @@ class _AliasSection extends ConsumerWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextButton.icon(
-              onPressed: () => _resetSection(context, ref),
-              icon: const Icon(Icons.restart_alt, size: 16),
-              label: const Text('إعادة تعيين'),
-              style: TextButton.styleFrom(foregroundColor: Colors.orange),
-            ),
+            resetButton,
             const Icon(Icons.expand_more),
           ],
         ),
         children: [
-          aliasesAsync.when(
-            loading: () => const Padding(
-              padding: EdgeInsets.all(16),
-              child: CircularProgressIndicator(),
-            ),
-            error: (e, _) => Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text('خطأ: $e'),
-            ),
-            data: (aliases) => Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Column(
-                children: fieldLabels.entries.map((entry) {
-                  final field = entry.key;
-                  final label = entry.value;
-                  final fieldAliases = aliases[field] ?? [];
-                  final isRequired = requiredFields.contains(field);
-                  return _FieldAliasRow(
-                    label: label,
-                    aliases: fieldAliases,
-                    isRequired: isRequired,
-                    onAdd: (alias) => _addAlias(ref, field, alias),
-                    onDelete: (alias) => _deleteAlias(ref, field, alias),
-                  );
-                }).toList(),
-              ),
-            ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: content,
           ),
         ],
       ),

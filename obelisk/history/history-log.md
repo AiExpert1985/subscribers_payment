@@ -441,3 +441,11 @@ If `اسم المشترك` is present and non-empty, the target group's name is 
 **Task:** Replace hardcoded column header aliases in both import pipelines with a user-managed SQLite table so users can add, remove, and reset aliases per field from the Settings screen without rebuilding the app. Account import detection changed from substring to exact match as part of the same change.
 
 ---
+
+## 20260310-1200 | Settings Screen — Unify Content into Dialog Buttons | TASK
+
+**Task:** Replace inline alias sections and About block in the Settings screen with buttons that open dialogs, and give the alias buttons section a title and description consistent with the other action sections.
+
+**Rejected:** Single combined alias button (rejected in favour of two separate buttons, one per import type).
+
+---

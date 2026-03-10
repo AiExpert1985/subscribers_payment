@@ -8,6 +8,7 @@ import '../payments/payments_providers.dart';
 import 'alias_settings_section.dart';
 import 'unmatched_accounts_export_service.dart';
 
+
 /// Settings screen with protected data-reset actions.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -53,9 +54,24 @@ class SettingsScreen extends ConsumerWidget {
             const SizedBox(height: 20),
             const Divider(),
             const SizedBox(height: 20),
-            const AliasSettingsSections(),
-            const SizedBox(height: 32),
-            const _AboutSection(),
+            _AliasButtons(
+              onPayment: () => _showAliasDialog(
+                context,
+                const PaymentAliasSectionCard(collapsible: false),
+              ),
+              onAccount: () => _showAliasDialog(
+                context,
+                const AccountAliasSectionCard(collapsible: false),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Divider(),
+            const SizedBox(height: 20),
+            OutlinedButton.icon(
+              onPressed: () => _showAboutDialog(context),
+              icon: const Icon(Icons.info_outline),
+              label: const Text('حول البرنامج'),
+            ),
           ],
         ),
       ),
@@ -84,6 +100,62 @@ class SettingsScreen extends ConsumerWidget {
         const SnackBar(content: Text('تم مسح جميع سجلات التسديدات')),
       );
     }
+  }
+
+  void _showAliasDialog(BuildContext context, Widget content) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: 600,
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: content,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAboutDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text(
+          'حول البرنامج',
+          textAlign: TextAlign.center,
+          textDirection: TextDirection.rtl,
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'هذا البرنامج هو قاعدة بيانات لجميع تسديدات المشتركين',
+              textAlign: TextAlign.center,
+              textDirection: TextDirection.rtl,
+              style: TextStyle(fontSize: 13),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'تم تصميم هذا البرنامج من قبل قسم الاتصالات في فرع توزيع كهرباء مركز نينوى 2026',
+              textAlign: TextAlign.center,
+              textDirection: TextDirection.rtl,
+              style: TextStyle(fontSize: 13, color: Colors.black54),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('إغلاق'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _findUnmatchedAccounts(
@@ -185,46 +257,45 @@ class _UnmatchedAccountsResultDialog extends StatelessWidget {
   }
 }
 
-/// Static "About" section displayed at the bottom of the Settings screen.
-class _AboutSection extends StatelessWidget {
-  const _AboutSection();
+/// Section for managing import column header aliases.
+class _AliasButtons extends StatelessWidget {
+  final VoidCallback onPayment;
+  final VoidCallback onAccount;
+
+  const _AliasButtons({required this.onPayment, required this.onAccount});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outlineVariant,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'أسماء أعمدة الاستيراد',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
-      ),
-      child: const Column(
-        children: [
-          Text(
-            'حول البرنامج',
-            textAlign: TextAlign.center,
-            textDirection: TextDirection.rtl,
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 8),
-          Text(
-            'هذا البرنامج هو قاعدة بيانات لجميع تسديدات المشتركين',
-            textAlign: TextAlign.center,
-            textDirection: TextDirection.rtl,
-            style: TextStyle(fontSize: 13, color: Colors.black54),
-          ),
-          SizedBox(height: 4),
-          Text(
-            'تم تصميم هذا البرنامج من قبل قسم الاتصالات في فرع توزيع كهرباء مركز نينوى 2026',
-            textAlign: TextAlign.center,
-            textDirection: TextDirection.rtl,
-            style: TextStyle(fontSize: 13, color: Colors.black54),
-          ),
-        ],
-      ),
+        const SizedBox(height: 6),
+        const Text(
+          'تحديد أسماء الأعمدة المقبولة عند استيراد ملفات Excel أو CSV.',
+          style: TextStyle(fontSize: 13, color: Colors.black54),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 12,
+          runSpacing: 8,
+          children: [
+            OutlinedButton.icon(
+              onPressed: onPayment,
+              icon: const Icon(Icons.tune),
+              label: const Text('أعمدة استيراد المدفوعات'),
+            ),
+            OutlinedButton.icon(
+              onPressed: onAccount,
+              icon: const Icon(Icons.tune),
+              label: const Text('أعمدة استيراد الحسابات'),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
