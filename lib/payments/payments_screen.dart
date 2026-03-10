@@ -85,25 +85,37 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
     final lastImport = ref.watch(lastImportTimeProvider);
 
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildActionBar(importResult),
-            const SizedBox(height: 12),
-            Expanded(
-              child: paymentsAsync.when(
-                data: (payments) => _buildPaymentsTable(payments, currentPage),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, _) => Center(child: Text('خطأ: $error')),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildActionBar(importResult),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: paymentsAsync.when(
+                      data: (payments) =>
+                          _buildPaymentsTable(payments, currentPage),
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (error, _) => Center(child: Text('خطأ: $error')),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildPagination(
+                    currentPage,
+                    totalPagesAsync,
+                    totalCountAsync,
+                  ),
+                  if (lastImport != null) _buildFooter(lastImport),
+                ],
               ),
             ),
-            const SizedBox(height: 8),
-            _buildPagination(currentPage, totalPagesAsync, totalCountAsync),
-            if (lastImport != null) _buildFooter(lastImport),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -111,51 +123,60 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
   // ─── Action Bar ────────────────────────────────────────────────────
 
   Widget _buildActionBar(ImportResult? importResult) {
-    return Row(
-      children: [
-        // Far right (first = rightmost in RTL): import + export
-        FilledButton.icon(
-          onPressed: _isImporting ? null : _importFiles,
-          icon: _isImporting
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.upload_file),
-          label: const Text('استيراد ملف التسديدات'),
-        ),
-        const SizedBox(width: 8),
-        FilledButton.icon(
-          onPressed: _isExporting ? null : _exportToExcel,
-          icon: _isExporting
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.download),
-          label: const Text('تصدير إلى Excel'),
-        ),
-        if (_isImporting && _importStatus != null) ...[
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFFE0F2F1),
+        boxShadow: [
+          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          // Far right (first = rightmost in RTL): import + export
+          FilledButton.icon(
+            onPressed: _isImporting ? null : _importFiles,
+            icon: _isImporting
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.upload_file),
+            label: const Text('استيراد ملف التسديدات'),
+          ),
           const SizedBox(width: 8),
-          Text(
-            _importStatus!,
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
+          FilledButton.icon(
+            onPressed: _isExporting ? null : _exportToExcel,
+            icon: _isExporting
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.download),
+            label: const Text('تصدير إلى Excel'),
+          ),
+          if (_isImporting && _importStatus != null) ...[
+            const SizedBox(width: 8),
+            Text(
+              _importStatus!,
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+          if (importResult != null) ...[
+            const SizedBox(width: 8),
+            _buildImportSummary(importResult),
+          ],
+          const Spacer(),
+          // Far left (last = leftmost in RTL): add payment
+          FilledButton.icon(
+            onPressed: _showAddPaymentDialog,
+            icon: const Icon(Icons.add, size: 16),
+            label: const Text('إضافة تسديد', style: TextStyle(fontSize: 13)),
           ),
         ],
-        if (importResult != null) ...[
-          const SizedBox(width: 8),
-          _buildImportSummary(importResult),
-        ],
-        const Spacer(),
-        // Far left (last = leftmost in RTL): add payment
-        FilledButton.icon(
-          onPressed: _showAddPaymentDialog,
-          icon: const Icon(Icons.add, size: 16),
-          label: const Text('إضافة تسديد', style: TextStyle(fontSize: 13)),
-        ),
-      ],
+      ),
     );
   }
 

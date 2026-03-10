@@ -62,26 +62,37 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
     final currentPage = ref.watch(currentAccountPageProvider);
 
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildActionBar(),
-            const SizedBox(height: 12),
-            _buildSearchBar(),
-            const SizedBox(height: 8),
-            Expanded(
-              child: groupsAsync.when(
-                data: (groups) => _buildGroupsList(groups, currentPage),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, _) => Center(child: Text('خطأ: $error')),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildActionBar(),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildSearchBar(),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: groupsAsync.when(
+                      data: (groups) => _buildGroupsList(groups, currentPage),
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (error, _) => Center(child: Text('خطأ: $error')),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildPagination(
+                    currentPage,
+                    totalPagesAsync,
+                    totalCountAsync,
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 8),
-            _buildPagination(currentPage, totalPagesAsync, totalCountAsync),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -89,10 +100,17 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
   // ─── Action Bar ──────────────────────────────────────────────────
 
   Widget _buildActionBar() {
-    return Center(
-      child: Wrap(
-        spacing: 12,
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFFE0F2F1),
+        boxShadow: [
+          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
         children: [
+          // Far right (first = rightmost in RTL): import + export
           Tooltip(
             message:
                 'استيراد ملف اكسل أو CSV يحتوي على عمود أو أكثر لأرقام الحسابات (الحساب القديم، الحساب الجديد، الاسم)',
@@ -102,11 +120,14 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
               label: const Text('استيراد حسابات'),
             ),
           ),
+          const SizedBox(width: 8),
           FilledButton.icon(
             onPressed: _exportSubscribers,
             icon: const Icon(Icons.download),
             label: const Text('تصدير المشتركين'),
           ),
+          const Spacer(),
+          // Far left (last = leftmost in RTL): add subscriber
           FilledButton.icon(
             onPressed: _addGroup,
             icon: const Icon(Icons.person_add),

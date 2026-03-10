@@ -449,3 +449,11 @@ If `اسم المشترك` is present and non-empty, the target group's name is 
 **Rejected:** Single combined alias button (rejected in favour of two separate buttons, one per import type).
 
 ---
+
+## 20260310-1400 | Top Bar UI Refresh — Action Bars, Button Layout, Tab Bar Color | TASK
+
+**Task:** Wrapped action buttons on both Payments and Accounts screens in a styled full-width top bar container to visually separate controls from data. Accounts screen button order was corrected to match Payments (import/export right, add-new far left). Bottom navigation bar updated to a light teal palette.
+
+**Rejected:** Moving filter/search fields into the top bar — kept column-aligned inside the table to preserve the visual column-to-filter relationship.
+
+---
