@@ -183,9 +183,13 @@ class _UnmatchedAccountsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'الحسابات الغير مسجلة',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.primary,
+          ),
         ),
         const SizedBox(height: 6),
         const Text(
@@ -268,9 +272,13 @@ class _AliasButtons extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'أسماء أعمدة الاستيراد',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.primary,
+          ),
         ),
         const SizedBox(height: 6),
         const Text(
@@ -282,12 +290,12 @@ class _AliasButtons extends StatelessWidget {
           spacing: 12,
           runSpacing: 8,
           children: [
-            OutlinedButton.icon(
+            FilledButton.icon(
               onPressed: onPayment,
               icon: const Icon(Icons.tune),
               label: const Text('أعمدة استيراد المدفوعات'),
             ),
-            OutlinedButton.icon(
+            FilledButton.icon(
               onPressed: onAccount,
               icon: const Icon(Icons.tune),
               label: const Text('أعمدة استيراد المشتركين'),
