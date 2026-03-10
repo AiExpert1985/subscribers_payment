@@ -435,3 +435,9 @@ If `اسم المشترك` is present and non-empty, the target group's name is 
 **Rejected:** None.
 
 ---
+
+## 20260310-0000 | User-Editable Import Column Aliases via Settings | TASK
+
+**Task:** Replace hardcoded column header aliases in both import pipelines with a user-managed SQLite table so users can add, remove, and reset aliases per field from the Settings screen without rebuilding the app. Account import detection changed from substring to exact match as part of the same change.
+
+---

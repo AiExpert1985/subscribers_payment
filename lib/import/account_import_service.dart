@@ -33,8 +33,11 @@ class AccountImportService {
 
   AccountImportService(this._db);
 
-  Future<AccountImportResult> importFile(String filePath) async {
-    final parseResult = AccountImportParser().parseFile(filePath);
+  Future<AccountImportResult> importFile(
+    String filePath, {
+    required Map<String, List<String>> aliases,
+  }) async {
+    final parseResult = AccountImportParser(aliases).parseFile(filePath);
     final errors = <AccountImportError>[];
 
     for (final msg in parseResult.errors) {

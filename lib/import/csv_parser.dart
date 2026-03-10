@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:csv/csv.dart';
 import 'package:flutter/foundation.dart';
 
-import 'column_aliases.dart';
 import 'excel_parser.dart';
 
 class _ColumnMapping {
@@ -33,6 +32,23 @@ class _ColumnMapping {
 /// pipeline is format-agnostic. Auto-detects comma / semicolon / tab delimiters
 /// and strips the UTF-8 BOM when present.
 class CsvParser {
+  final List<String> _accountAliases;
+  final List<String> _amountAliases;
+  final List<String> _dateAliases;
+  final List<String> _subscriberNameAliases;
+  final List<String> _stampAliases;
+  final List<String> _typeAliases;
+  final List<String> _addressAliases;
+
+  CsvParser(Map<String, List<String>> aliases)
+      : _accountAliases = aliases['account_number'] ?? [],
+        _amountAliases = aliases['amount'] ?? [],
+        _dateAliases = aliases['date'] ?? [],
+        _subscriberNameAliases = aliases['subscriber_name'] ?? [],
+        _stampAliases = aliases['stamp_number'] ?? [],
+        _typeAliases = aliases['type'] ?? [],
+        _addressAliases = aliases['address'] ?? [];
+
   ExcelParseResult parseFile(String filePath) {
     final fileName = filePath.split(Platform.pathSeparator).last;
 
@@ -152,20 +168,20 @@ class CsvParser {
       final text = headerRow[i].trim().toLowerCase();
       if (text.isEmpty) continue;
 
-      if (accountIdx == null && _matches(text, accountAliases)) {
+      if (accountIdx == null && _matches(text, _accountAliases)) {
         accountIdx = i;
-      } else if (amountIdx == null && _matches(text, amountAliases)) {
+      } else if (amountIdx == null && _matches(text, _amountAliases)) {
         amountIdx = i;
-      } else if (dateIdx == null && _matches(text, dateAliases)) {
+      } else if (dateIdx == null && _matches(text, _dateAliases)) {
         dateIdx = i;
       } else if (subscriberNameIdx == null &&
-          _matches(text, subscriberNameAliases)) {
+          _matches(text, _subscriberNameAliases)) {
         subscriberNameIdx = i;
-      } else if (stampIdx == null && _matches(text, stampAliases)) {
+      } else if (stampIdx == null && _matches(text, _stampAliases)) {
         stampIdx = i;
-      } else if (typeIdx == null && _matches(text, typeAliases)) {
+      } else if (typeIdx == null && _matches(text, _typeAliases)) {
         typeIdx = i;
-      } else if (addressIdx == null && _matches(text, addressAliases)) {
+      } else if (addressIdx == null && _matches(text, _addressAliases)) {
         addressIdx = i;
       }
     }

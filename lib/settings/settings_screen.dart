@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import '../data/providers.dart';
 import '../accounts/accounts_providers.dart';
 import '../payments/payments_providers.dart';
+import 'alias_settings_section.dart';
 import 'unmatched_accounts_export_service.dart';
 
 /// Settings screen with protected data-reset actions.
@@ -14,7 +15,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,7 +50,11 @@ class SettingsScreen extends ConsumerWidget {
             _UnmatchedAccountsSection(
               onPressed: () => _findUnmatchedAccounts(context, ref),
             ),
-            const Spacer(),
+            const SizedBox(height: 20),
+            const Divider(),
+            const SizedBox(height: 20),
+            const AliasSettingsSections(),
+            const SizedBox(height: 32),
             const _AboutSection(),
           ],
         ),

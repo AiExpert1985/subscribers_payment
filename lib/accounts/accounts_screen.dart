@@ -645,7 +645,11 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
     );
 
     final db = ref.read(databaseServiceProvider);
-    final result = await AccountImportService(db).importFile(filePath);
+    final aliases = await db.getAliasesForSection('account');
+    final result = await AccountImportService(db).importFile(
+      filePath,
+      aliases: aliases,
+    );
 
     if (!mounted) return;
     Navigator.of(context).pop(); // close progress dialog

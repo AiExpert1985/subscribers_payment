@@ -829,9 +829,11 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
         .toList();
 
     final db = ref.read(databaseServiceProvider);
+    final aliases = await db.getAliasesForSection('payment');
     final importService = ImportService(db);
     final importResult = await importService.importFiles(
       filePaths,
+      aliases: aliases,
       onProgress: (label) {
         if (mounted) setState(() => _importStatus = label);
       },

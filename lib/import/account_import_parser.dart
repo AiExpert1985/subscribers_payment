@@ -26,28 +26,17 @@ class AccountImportParseResult {
 
 /// Parses an Excel or CSV file for account import.
 ///
-/// Any column whose header contains (case-insensitive, substring) any of the
-/// account keywords is treated as an account-number column. A file is valid
-/// if it has at least one such column.
-///
-/// The optional subscriber-name column is detected by exact alias match.
+/// A column is an account-number column if its header exactly matches
+/// (case-insensitive, trimmed) any alias in the 'account' alias list.
+/// The optional subscriber-name column is matched the same way.
 /// Rows with no parseable account numbers are silently skipped.
 class AccountImportParser {
-  // A column is an account column if its lowercased header CONTAINS any of these.
-  static const _accountKeywords = [
-    'الحساب القديم',
-    'الحساب الجديد',
-    'حساب',
-    'قديم',
-    'جديد',
-    'account',
-    'account no',
-    'account_no',
-    'old',
-    'new',
-  ];
+  final List<String> _accountAliases;
+  final List<String> _nameAliases;
 
-  static const _nameAliases = ['اسم المشترك', 'اسم', 'subscriber name', 'name'];
+  AccountImportParser(Map<String, List<String>> aliases)
+      : _accountAliases = aliases['account'] ?? [],
+        _nameAliases = aliases['subscriber_name'] ?? [];
 
   AccountImportParseResult parseFile(String filePath) {
     final fileName = filePath.split(Platform.pathSeparator).last;
@@ -212,7 +201,7 @@ class AccountImportParser {
   }
 
   bool _isAccountHeader(String headerLower) =>
-      _accountKeywords.any((k) => headerLower.contains(k.toLowerCase()));
+      _accountAliases.any((k) => k.toLowerCase() == headerLower);
 
   // ─── Shared helpers ───────────────────────────────────────────────────────
 

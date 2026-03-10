@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:excel/excel.dart';
 import 'package:flutter/foundation.dart';
-import 'column_aliases.dart';
 
 /// Result of parsing a single Excel file.
 class ExcelParseResult {
@@ -45,6 +44,23 @@ class _ColumnMapping {
 /// for the 3 required columns. A file is "successful" if at least one tab
 /// has valid data.
 class ExcelParser {
+  final List<String> _accountAliases;
+  final List<String> _amountAliases;
+  final List<String> _dateAliases;
+  final List<String> _subscriberNameAliases;
+  final List<String> _stampAliases;
+  final List<String> _typeAliases;
+  final List<String> _addressAliases;
+
+  ExcelParser(Map<String, List<String>> aliases)
+      : _accountAliases = aliases['account_number'] ?? [],
+        _amountAliases = aliases['amount'] ?? [],
+        _dateAliases = aliases['date'] ?? [],
+        _subscriberNameAliases = aliases['subscriber_name'] ?? [],
+        _stampAliases = aliases['stamp_number'] ?? [],
+        _typeAliases = aliases['type'] ?? [],
+        _addressAliases = aliases['address'] ?? [];
+
   /// Parses a single Excel file from [filePath].
   ExcelParseResult parseFile(String filePath) {
     final fileName = filePath.split(Platform.pathSeparator).last;
@@ -120,22 +136,22 @@ class ExcelParser {
       final headerText = _extractCellText(cell).trim().toLowerCase();
       if (headerText.isEmpty) continue;
 
-      if (accountIdx == null && _matchesAlias(headerText, accountAliases)) {
+      if (accountIdx == null && _matchesAlias(headerText, _accountAliases)) {
         accountIdx = i;
       } else if (amountIdx == null &&
-          _matchesAlias(headerText, amountAliases)) {
+          _matchesAlias(headerText, _amountAliases)) {
         amountIdx = i;
-      } else if (dateIdx == null && _matchesAlias(headerText, dateAliases)) {
+      } else if (dateIdx == null && _matchesAlias(headerText, _dateAliases)) {
         dateIdx = i;
       } else if (subscriberNameIdx == null &&
-          _matchesAlias(headerText, subscriberNameAliases)) {
+          _matchesAlias(headerText, _subscriberNameAliases)) {
         subscriberNameIdx = i;
-      } else if (stampIdx == null && _matchesAlias(headerText, stampAliases)) {
+      } else if (stampIdx == null && _matchesAlias(headerText, _stampAliases)) {
         stampIdx = i;
-      } else if (typeIdx == null && _matchesAlias(headerText, typeAliases)) {
+      } else if (typeIdx == null && _matchesAlias(headerText, _typeAliases)) {
         typeIdx = i;
       } else if (addressIdx == null &&
-          _matchesAlias(headerText, addressAliases)) {
+          _matchesAlias(headerText, _addressAliases)) {
         addressIdx = i;
       }
     }

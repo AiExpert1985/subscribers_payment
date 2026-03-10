@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import '../import/alias_defaults.dart';
 
 /// Service for managing SQLite database operations.
 ///
@@ -12,12 +13,13 @@ import 'package:path/path.dart';
 class DatabaseService {
   static Database? _database;
   static const String _databaseName = 'subscribers_payments_v2.db';
-  static const int _databaseVersion = 2;
+  static const int _databaseVersion = 3;
 
   // Table names
   static const String tableSubscriberGroups = 'subscriber_groups';
   static const String tableAccounts = 'accounts';
   static const String tablePayments = 'payments';
+  static const String tableColumnAliases = 'column_aliases';
 
   // Pagination defaults
   static const int defaultPageSize = 20;
@@ -80,12 +82,18 @@ class DatabaseService {
     ''');
 
     await _createSubscriberGroupNameIndex(db);
+    await _createColumnAliasesTable(db);
+    await _seedDefaultAliases(db);
   }
 
   /// Handles database schema upgrades between versions.
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       await _createSubscriberGroupNameIndex(db);
+    }
+    if (oldVersion < 3) {
+      await _createColumnAliasesTable(db);
+      await _seedDefaultAliases(db);
     }
   }
 
@@ -96,6 +104,38 @@ class DatabaseService {
       ON $tableSubscriberGroups(name)
       WHERE name != ''
     ''');
+  }
+
+  /// Creates the column_aliases table.
+  Future<void> _createColumnAliasesTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS $tableColumnAliases (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        section TEXT NOT NULL,
+        field TEXT NOT NULL,
+        alias TEXT NOT NULL,
+        UNIQUE(section, field, alias)
+      )
+    ''');
+  }
+
+  /// Seeds [db] with the default aliases from [kDefaultAliases].
+  Future<void> _seedDefaultAliases(DatabaseExecutor db) async {
+    for (final sectionEntry in kDefaultAliases.entries) {
+      for (final fieldEntry in sectionEntry.value.entries) {
+        for (final alias in fieldEntry.value) {
+          await db.insert(
+            tableColumnAliases,
+            {
+              'section': sectionEntry.key,
+              'field': fieldEntry.key,
+              'alias': alias,
+            },
+            conflictAlgorithm: ConflictAlgorithm.ignore,
+          );
+        }
+      }
+    }
   }
 
   /// Closes the database connection
@@ -617,6 +657,68 @@ class DatabaseService {
       'ORDER BY reference_account_number ASC',
     );
     return rows.map((r) => r['reference_account_number'] as int).toList();
+  }
+
+  // ─── Column Aliases ──────────────────────────────────────────────
+
+  /// Returns all aliases for a section, grouped by field name.
+  Future<Map<String, List<String>>> getAliasesForSection(String section) async {
+    final db = await database;
+    final rows = await db.query(
+      tableColumnAliases,
+      where: 'section = ?',
+      whereArgs: [section],
+      orderBy: 'field ASC, alias ASC',
+    );
+    final result = <String, List<String>>{};
+    for (final row in rows) {
+      final field = row['field'] as String;
+      final alias = row['alias'] as String;
+      result.putIfAbsent(field, () => []).add(alias);
+    }
+    return result;
+  }
+
+  /// Adds [alias] to the given [section]/[field]. Silently ignored if duplicate.
+  Future<void> addAlias(String section, String field, String alias) async {
+    final db = await database;
+    await db.insert(
+      tableColumnAliases,
+      {'section': section, 'field': field, 'alias': alias},
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+  }
+
+  /// Removes a specific alias from [section]/[field].
+  Future<void> deleteAlias(String section, String field, String alias) async {
+    final db = await database;
+    await db.delete(
+      tableColumnAliases,
+      where: 'section = ? AND field = ? AND alias = ?',
+      whereArgs: [section, field, alias],
+    );
+  }
+
+  /// Deletes all aliases for [section] and re-seeds defaults.
+  Future<void> resetSectionAliases(String section) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      await txn.delete(
+        tableColumnAliases,
+        where: 'section = ?',
+        whereArgs: [section],
+      );
+      final defaults = kDefaultAliases[section] ?? {};
+      for (final fieldEntry in defaults.entries) {
+        for (final alias in fieldEntry.value) {
+          await txn.insert(
+            tableColumnAliases,
+            {'section': section, 'field': fieldEntry.key, 'alias': alias},
+            conflictAlgorithm: ConflictAlgorithm.ignore,
+          );
+        }
+      }
+    });
   }
 
   // ─── Private Helpers ─────────────────────────────────────────────

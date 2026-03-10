@@ -1,19 +1,12 @@
 import 'dart:async';
+import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
 import '../data/database_service.dart';
 import 'csv_parser.dart';
 import 'excel_parser.dart';
 
-// Top-level function required by compute() — closures are not allowed because
-// they would capture non-sendable Flutter state through shared Dart contexts.
-ExcelParseResult _parseFile(String path) {
-  final ext = path.split('.').last.toLowerCase();
-  if (ext == 'csv') return CsvParser().parseFile(path);
-  return ExcelParser().parseFile(path);
-}
-
-/// Result of importing one or more Excel files.
+/// Result of importing one or more Excel/CSV files.
 class ImportResult {
   final int successfulFiles;
   final int failedFiles;
@@ -30,7 +23,7 @@ class ImportResult {
   });
 }
 
-/// Orchestrates the full import pipeline: parse → validate → auto-create → insert.
+/// Orchestrates the full import pipeline: parse → validate → insert.
 ///
 /// Uses the database's composite unique constraint for duplicate prevention
 /// (INSERT OR IGNORE).
@@ -39,10 +32,16 @@ class ImportService {
 
   ImportService(this._db);
 
-  /// Imports payments from multiple Excel file paths.
+  /// Imports payments from multiple file paths.
+  ///
+  /// [aliases] is the payment section alias map fetched from the DB before
+  /// calling this method — it must be passed in so the parser can run inside
+  /// a background isolate without accessing the database.
+  ///
   /// Reports progress via [onProgress] with a human-readable Arabic label.
   Future<ImportResult> importFiles(
     List<String> filePaths, {
+    required Map<String, List<String>> aliases,
     void Function(String label)? onProgress,
   }) async {
     int successfulFiles = 0;
@@ -62,7 +61,15 @@ class ImportService {
           '[Import] [$fileName] Still parsing... (${fileWatch.elapsedMilliseconds}ms)',
         );
       });
-      final parseResult = await compute(_parseFile, path);
+
+      // Aliases are plain Map<String,List<String>> — safe to send across isolate boundary.
+      final aliasesSnapshot = Map<String, List<String>>.from(aliases);
+      final parseResult = await Isolate.run(() {
+        final ext = path.split('.').last.toLowerCase();
+        if (ext == 'csv') return CsvParser(aliasesSnapshot).parseFile(path);
+        return ExcelParser(aliasesSnapshot).parseFile(path);
+      });
+
       parseTimer.cancel();
 
       if (!parseResult.isSuccessful) {
@@ -78,7 +85,6 @@ class ImportService {
         '[Import] [$fileName] Parse complete: ${parseResult.rows.length} rows (${fileWatch.elapsedMilliseconds}ms)',
       );
 
-      // Notify user that parsing is done and saving is starting
       onProgress?.call(
         'تم قراءة ${parseResult.rows.length} سجل — جاري الحفظ...',
       );
